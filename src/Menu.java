@@ -1,17 +1,20 @@
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 
 public class Menu {
 
     private static final int WIDTH = 1350;
     private static final int HEIGHT = 900;
-    public static final int FPS = 100;
+    public static final int FPS = 60;
 
     public static Scene mainMenu;
 
     public static void loadMenus() {
         mainMenu = loadScene("MainMenu.fxml");
+
+        mainMenu.addEventFilter(KeyEvent.KEY_RELEASED, event -> Main.timerController.handleKeyboard(event));
     }
 
     /**
@@ -29,6 +32,12 @@ public class Menu {
         }
 
         return null;
+    }
+
+
+
+    public static double getTimeUnit() {
+        return 1.0/FPS;
     }
 
 }

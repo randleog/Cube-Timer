@@ -17,6 +17,7 @@ public class Main extends Application {
 
     private static Stage scene;
 
+    public static MainMenuController timerController;
 
 
 
@@ -37,7 +38,7 @@ public class Main extends Application {
         setMainMenu();
         scene.show();
 
-        
+
     }
 
 
