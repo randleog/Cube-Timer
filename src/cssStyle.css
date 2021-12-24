@@ -1,0 +1,27 @@
+
+
+
+.button {
+-fx-text-fill: white;
+-fx-background-color: #111111;
+-fx-effect:dropshadow(three-pass-box,black,30,0,0,20);
+}
+.button:hover {
+    -fx-background-color: #777777;
+}
+
+{
+    -fx-base: #555555;
+}
+
+TilePane {
+    -fx-background-color: #aaaaaa;
+}
+
+VBox {
+    -fx-background-color: #888888;
+}
+
+#leaderboard {
+   -fx-background-color: #aaaaaa;
+}
