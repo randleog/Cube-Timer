@@ -5,6 +5,9 @@ import javafx.scene.Scene;
 
 import javafx.scene.layout.BorderPane;
 
+import java.util.Random;
+import java.util.random.*;
+
 import javafx.stage.Stage;
 
 
@@ -19,6 +22,8 @@ public class Main extends Application {
 
     public static MainMenuController timerController;
 
+    public static Random random;
+
 
 
 
@@ -28,8 +33,9 @@ public class Main extends Application {
      * @param primaryStage Stage javafx shows things on.
      */
     public void start(Stage primaryStage) {
+        random = new Random();
 
-
+        SolveList.loadSolves();
         Menu.loadMenus();
 
 
