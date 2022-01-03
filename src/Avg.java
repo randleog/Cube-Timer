@@ -1,13 +1,24 @@
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class Avg implements Comparable {
 
     private static final int LARGE_NUMBER = 999999999;
     public ArrayList<Double> solves = new ArrayList<>();
 
+    private Calendar time;
+
 
     public Avg() {
 
+    }
+
+    public void setTime(Calendar time) {
+        this.time =time;
+    }
+
+    public Calendar getTime() {
+        return time;
     }
 
     public double getAverage() {

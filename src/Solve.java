@@ -17,6 +17,8 @@ public class Solve implements Comparable {
     private double time;
     private double timeOfCompletion;
 
+
+
     private String penalty;
 
     private static final String NO_PENALTY = "N/A";
@@ -39,6 +41,8 @@ public class Solve implements Comparable {
 
         this.penalty = penalty;
     }
+
+
 
     /**
      * @return int the number of time at which it was achieved for the score

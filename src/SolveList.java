@@ -26,13 +26,67 @@ public class SolveList {
 
     private static ArrayList<Avg> ao12s= new ArrayList<>();
 
+    private static ArrayList<Avg> ao50s= new ArrayList<>();
+
     public static void loadSolves() {
         updateTable(LEADER_BOARD_PATH + "solves.txt", getSolves("solves.txt"));
 
-      //  Collections.sort(ao5s);
-        System.out.println(ao5s.get(0).getAverage());
+
     }
 
+
+    public static void printAverages(ArrayList<Avg> avgs) {
+
+        for (Avg avg : avgs) {
+            System.out.println(avg.getAverage());
+        }
+
+    }
+
+    public static double getpbAo5() {
+
+
+            double smallest = LARGE_NUMBER;
+
+
+            for (Avg avg : ao5s) {
+                if (avg.getAverage() < smallest) {
+                    smallest = avg.getAverage();
+                }
+            }
+        return smallest;
+
+    }
+
+    public static double getpbAo12() {
+
+
+        double smallest = LARGE_NUMBER;
+
+
+        for (Avg avg : ao5s) {
+            if (avg.getAverage() < smallest) {
+                smallest = avg.getAverage();
+            }
+        }
+        return smallest;
+
+    }
+
+    public static double getpbAo50() {
+
+
+        double smallest = LARGE_NUMBER;
+
+
+        for (Avg avg : ao50s) {
+            if (avg.getAverage() < smallest) {
+                smallest = avg.getAverage();
+            }
+        }
+        return smallest;
+
+    }
     /**
      * if the score is in the top 10 of the leaderboard for times or points,
      * add it to that leaderboard.
@@ -79,23 +133,52 @@ public class SolveList {
         SolveList.solves = scores;
         int i = 0;
         Avg bufferAo5 = new Avg();
+        Avg bufferAo12 = new Avg();
+        Avg bufferAo50 = new Avg();
         try {
             FileWriter writer = new FileWriter(tableName);
             for (Solve score : scores) {
                 writer.append(score.toString() + "\n");
+
+                i++;
 
                 bufferAo5.solves.add(score.getTime());
                 if (bufferAo5.solves.size() > 5) {
                     bufferAo5.solves.remove(0);
                 }
 
-                i++;
                 if (i > 4) {
                     Avg tempAvg = new Avg();
                     tempAvg.solves.addAll(bufferAo5.solves);
+                    tempAvg.setTime(score.getCalendar());
                     ao5s.add(tempAvg);
                 }
 
+
+
+                bufferAo12.solves.add(score.getTime());
+                if (bufferAo12.solves.size() > 12) {
+                    bufferAo12.solves.remove(0);
+                }
+
+                if (i > 11) {
+                    Avg tempAvg = new Avg();
+                    tempAvg.solves.addAll(bufferAo12.solves);
+                    tempAvg.setTime(score.getCalendar());
+                    ao12s.add(tempAvg);
+                }
+
+                bufferAo50.solves.add(score.getTime());
+                if (bufferAo50.solves.size() > 50) {
+                    bufferAo50.solves.remove(0);
+                }
+
+                if (i > 49) {
+                    Avg tempAvg = new Avg();
+                    tempAvg.solves.addAll(bufferAo50.solves);
+                    tempAvg.setTime(score.getCalendar());
+                    ao50s.add(tempAvg);
+                }
 
             }
             writer.close();
@@ -104,6 +187,44 @@ public class SolveList {
             e.printStackTrace();
         }
 
+    }
+
+    public static double getPBAo5Daily() {
+        double smallest = LARGE_NUMBER;
+
+        Date date = new Date(System.currentTimeMillis());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        for (Avg avg : ao5s) {
+
+                if ((calendar.get(Calendar.DAY_OF_YEAR) == avg.getTime().get(Calendar.DAY_OF_YEAR))
+                        && (calendar.get(Calendar.YEAR) == avg.getTime().get(Calendar.YEAR))) {
+                    if (avg.getAverage() < smallest) {
+                        smallest = avg.getAverage();
+                    }
+                }
+        }
+        return smallest;
+    }
+
+    public static double getPBAo12Daily() {
+        double smallest = LARGE_NUMBER;
+
+        Date date = new Date(System.currentTimeMillis());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        for (Avg avg : ao12s) {
+
+            if ((calendar.get(Calendar.WEEK_OF_YEAR) == avg.getTime().get(Calendar.WEEK_OF_YEAR))
+                    && (calendar.get(Calendar.YEAR) == avg.getTime().get(Calendar.YEAR))) {
+                if (avg.getAverage() < smallest) {
+                    smallest = avg.getAverage();
+                }
+            }
+        }
+        return smallest;
     }
 
 

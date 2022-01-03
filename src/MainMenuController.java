@@ -44,6 +44,9 @@ public class MainMenuController implements Initializable {
     public static boolean running = false;
 
     @FXML
+    private VBox pbs;
+
+    @FXML
     private VBox times;
 
     @FXML
@@ -121,6 +124,8 @@ public class MainMenuController implements Initializable {
         updateMonthly();
        updateLast();
 
+       updatePbs();
+
 
 
     }
@@ -132,6 +137,54 @@ public class MainMenuController implements Initializable {
             }
         }
         return false;
+    }
+
+    private void updatePbs() {
+        Button title = new Button();
+        title.setText("Averages");
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        pbs.getChildren().add(title);
+
+        pbs.getChildren().add(new Text("--------"));
+
+        Button ao5text = new Button();
+        ao5text.setText("ao5: " + String.format("%.3f"
+                , SolveList.getAverage(5, "solves.txt")));
+        ao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        pbs.getChildren().add(ao5text);
+
+
+        Button ao12text = new Button();
+        ao12text.setText("ao12: " + String.format("%.3f"
+                , SolveList.getAverage(12, "solves.txt")));
+        ao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        pbs.getChildren().add(ao12text);
+
+        Button ao50text = new Button();
+        ao50text.setText("ao50: " + String.format("%.3f"
+                , SolveList.getAverage(50, "solves.txt")));
+        ao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        pbs.getChildren().add(ao50text);
+
+        pbs.getChildren().add(new Text("--------"));
+
+        Button pbao5text = new Button();
+        pbao5text.setText("PB ao5: " + String.format("%.3f"
+                , SolveList.getpbAo5()));
+        pbao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        pbs.getChildren().add(pbao5text);
+
+        Button pbao12text = new Button();
+        pbao12text.setText("PB ao12: " + String.format("%.3f"
+                , SolveList.getpbAo12()));
+        pbao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        pbs.getChildren().add(pbao12text);
+
+        Button pbao50text = new Button();
+        pbao50text.setText("PB ao50: " + String.format("%.3f"
+                , SolveList.getpbAo50()));
+        pbao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        pbs.getChildren().add(pbao50text);
     }
 
     private void updateLast() {
@@ -149,19 +202,6 @@ public class MainMenuController implements Initializable {
         title.setText("last " + VISIBILE_LIMIT);
         title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
         times.getChildren().add(title);
-
-        Button ao5text = new Button();
-        ao5text.setText("ao5: " + String.format("%.3f"
-                , SolveList.getAverage(5, "solves.txt")));
-        ao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
-        times.getChildren().add(ao5text);
-
-
-        Button ao12text = new Button();
-        ao12text.setText("ao12: " + String.format("%.3f"
-                , SolveList.getAverage(12, "solves.txt")));
-        ao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
-        times.getChildren().add(ao12text);
 
         times.getChildren().add(new Text("-------------------------------------"));
 
@@ -249,6 +289,16 @@ public class MainMenuController implements Initializable {
         title.setText("Today");
         title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
         daily.getChildren().add(title);
+        daily.getChildren().add(new Text("-------------------------------------"));
+
+        Button pbao5text = new Button();
+        pbao5text.setText("PB ao5: " + String.format("%.3f"
+                , SolveList.getPBAo5Daily()));
+        pbao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        daily.getChildren().add(pbao5text);
+
+
+
         daily.getChildren().add(new Text("-------------------------------------"));
 
             int i = 0;
