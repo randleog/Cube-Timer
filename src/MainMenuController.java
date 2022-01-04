@@ -1,7 +1,5 @@
-import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.css.Style;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -11,18 +9,11 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import java.io.File;
-import java.io.IOException;
+
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 
 /**
@@ -34,6 +25,10 @@ public class MainMenuController implements Initializable {
     private static ArrayList<String> availableChars = new ArrayList<>();
     private static ArrayList<String> additionalScramble = new ArrayList<>();
 
+    private static String fontSize = "-fx-font-size: 13px";
+
+    private static String delimeter = "------------------------------------------";
+
 
     public Timeline timer;
 
@@ -43,6 +38,11 @@ public class MainMenuController implements Initializable {
     private static long timeAtStart;
     public static boolean running = false;
 
+    private static int scroll = 0;
+
+
+    private static String display_type = "daily";
+
     @FXML
     private VBox pbs;
 
@@ -50,10 +50,7 @@ public class MainMenuController implements Initializable {
     private VBox times;
 
     @FXML
-    private VBox monthly;
-
-    @FXML
-    private VBox weekly;
+    private VBox allTime;
 
     @FXML
     private VBox daily;
@@ -119,15 +116,49 @@ public class MainMenuController implements Initializable {
     }
 
     private void updateTimeList() {
-        updateDaily();
-        updateWeekly();
-        updateMonthly();
-       updateLast();
+        getTimeLeaderboard(daily);
+        updateLast(times);
 
-       updatePbs();
+        updatePbs(pbs);
+
+        updateAll(allTime);
 
 
 
+    }
+
+    private void getTimeLeaderboard(VBox vbox) {
+        switch (display_type) {
+            case "daily" -> updateDaily(vbox);
+            case "weekly" -> updateWeekly(vbox);
+            case "monthly" -> updateMonthly(vbox);
+            default -> resetBoard(vbox);
+        }
+
+        Button scrollDown = new Button();
+        scrollDown.setText("Change Time-Span");
+
+        scrollDown.setFocusTraversable(false);
+        scrollDown.setOnAction(new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                switch (display_type) {
+                    case "daily" -> display_type = "weekly";
+                    case "weekly" -> display_type = "monthly";
+                    case "monthly" -> display_type = "daily";
+                    default -> resetBoard(vbox);
+                }
+                updateTimeList();
+            }
+
+        });
+        vbox.getChildren().add(scrollDown);
+    }
+
+    private void resetBoard(VBox vbox) {
+        while (vbox.getChildren().size() > 0) {
+            vbox.getChildren().remove(0);
+        }
     }
 
     private boolean containsSolve(ArrayList<Solve> solves, Solve solve) {
@@ -139,83 +170,120 @@ public class MainMenuController implements Initializable {
         return false;
     }
 
-    private void updatePbs() {
+    private void updatePbs(VBox pbs) {
+        resetBoard(pbs);
+
         Button title = new Button();
         title.setText("Averages");
-        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;-fx-font-size: 18px;");
         pbs.getChildren().add(title);
 
-        pbs.getChildren().add(new Text("--------"));
+        pbs.getChildren().add(new Text(delimeter));
 
         Button ao5text = new Button();
         ao5text.setText("ao5: " + String.format("%.3f"
                 , SolveList.getAverage(5, "solves.txt")));
-        ao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        ao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(ao5text);
 
 
         Button ao12text = new Button();
         ao12text.setText("ao12: " + String.format("%.3f"
                 , SolveList.getAverage(12, "solves.txt")));
-        ao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        ao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(ao12text);
 
         Button ao50text = new Button();
         ao50text.setText("ao50: " + String.format("%.3f"
                 , SolveList.getAverage(50, "solves.txt")));
-        ao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        ao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(ao50text);
 
-        pbs.getChildren().add(new Text("--------"));
+        pbs.getChildren().add(new Text(delimeter));
 
         Button pbao5text = new Button();
         pbao5text.setText("PB ao5: " + String.format("%.3f"
                 , SolveList.getpbAo5()));
-        pbao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        pbao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(pbao5text);
 
         Button pbao12text = new Button();
         pbao12text.setText("PB ao12: " + String.format("%.3f"
                 , SolveList.getpbAo12()));
-        pbao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        pbao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(pbao12text);
 
         Button pbao50text = new Button();
         pbao50text.setText("PB ao50: " + String.format("%.3f"
                 , SolveList.getpbAo50()));
-        pbao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        pbao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(pbao50text);
     }
 
-    private void updateLast() {
-        ArrayList<Solve> solves = SolveList.getLastN("solves.txt", 25);
+    private void updateLast(VBox times) {
 
-        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 5);
+        ArrayList<Solve> solves = SolveList.getLastN("solves.txt", scroll ,VISIBILE_LIMIT+scroll);
 
-        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 12);
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
+
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
 
         while (times.getChildren().size() > 0) {
             times.getChildren().remove(0);
         }
 
+        Button scrollUp = new Button();
+        scrollUp.setText("^");
+
+        scrollUp.setFocusTraversable(false);
+        scrollUp.setOnAction(new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                scroll--;
+                if (scroll < 0) {
+                    scroll = 0;
+                }
+                updateLast(times);
+
+            }
+
+        });
+
+        times.getChildren().add(scrollUp);
+
         Button title = new Button();
-        title.setText("last " + VISIBILE_LIMIT);
-        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        title.setText("last " + scroll + " - " + (VISIBILE_LIMIT+scroll) + " / " + SolveList.getSolveCount());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         times.getChildren().add(title);
 
-        times.getChildren().add(new Text("-------------------------------------"));
 
-        int i = 0;
+        times.getChildren().add(new Text(delimeter));
+
+
         for (Solve solve : solves) {
-            i++;
-            if (i > VISIBILE_LIMIT) {
 
-            } else {
 
-                times.getChildren().add(getSolveButton(solve, ao5, ao12));
-            }
+            times.getChildren().add(getSolveButton(solve, ao5, ao12));
+
+
         }
 
+        Button scrollDown = new Button();
+        scrollDown.setText("V");
+
+        scrollDown.setFocusTraversable(false);
+        scrollDown.setOnAction(new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                scroll++;
+                if (scroll > SolveList.getSolveCount()-VISIBILE_LIMIT) {
+                    scroll = SolveList.getSolveCount()-VISIBILE_LIMIT;
+                }
+                updateLast(times);
+            }
+
+        });
+        times.getChildren().add(scrollDown);
 
     }
 
@@ -256,50 +324,106 @@ public class MainMenuController implements Initializable {
 
         });
 
+
+
+
+
+        boldifyRelevantButton(button, solve);
+
+
         if (containsSolve(ao5, solve)) {
 
 
-            button.setStyle("-fx-text-fill: lime;-fx-background-color:#444444;-fx-font-weight: bold;");
+            button.setStyle("-fx-text-fill: lime;-fx-background-color:#444444;-fx-font-weight: bold;" + fontSize);
 
         } else if (containsSolve(ao12, solve)) {
 
-            button.setStyle("-fx-text-fill: cccccc;-fx-background-color:#444444;");
+            button.setStyle("-fx-text-fill: cccccc;-fx-background-color:#444444;-fx-font-weight: bold;" + fontSize);
 
-        } else {
+        }
+        return button;
+        }
 
-            button.setStyle("-fx-text-fill: #bbbbbb;-fx-background-color:#333333");
+        private void boldifyRelevantButton(Button button, Solve solve) {
+            Date date = new Date(System.currentTimeMillis());
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            button.setStyle("-fx-text-fill: #bbbbbb;-fx-background-color:#333333;" + fontSize);
+            switch (display_type) {
+                case "daily":
+                    if ((calendar.get(Calendar.DAY_OF_YEAR) == solve.getCalendar().get(Calendar.DAY_OF_YEAR))
+                            && (calendar.get(Calendar.YEAR) == solve.getCalendar().get(Calendar.YEAR))) {
+                        button.setStyle("-fx-text-fill: #bbbbbb;-fx-background-color:#333333;-fx-font-weight: bold;" + fontSize);
+
+                    }
+                    break;
+                case "weekly":
+                    if ((calendar.get(Calendar.WEEK_OF_YEAR) == solve.getCalendar().get(Calendar.WEEK_OF_YEAR))
+                            && (calendar.get(Calendar.YEAR) == solve.getCalendar().get(Calendar.YEAR))) {
+                        button.setStyle("-fx-text-fill: #bbbbbb;-fx-background-color:#333333;-fx-font-weight: bold;" + fontSize);
+
+                    }
+                    break;
+                case "monthly":
+                    if ((calendar.get(Calendar.MONTH) == solve.getCalendar().get(Calendar.MONTH))
+                            && (calendar.get(Calendar.YEAR) == solve.getCalendar().get(Calendar.YEAR))) {
+                        button.setStyle("-fx-text-fill: #bbbbbb;-fx-background-color:#333333;-fx-font-weight: bold;" + fontSize);
+
+                    }
+                    break;
+            }
 
         }
 
-        return button;
+    private void updateAll(VBox vbox) {
+        while (vbox.getChildren().size() > 0) {
+            vbox.getChildren().remove(0);
+        }
+
+        ArrayList<Solve> solves = SolveList.getAllTime();
+
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
+
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
+
+        Button title = new Button();
+        title.setText("All Time"+ ": " + solves.size());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        vbox.getChildren().add(title);
+        vbox.getChildren().add(new Text(delimeter));
+
+
+        int i = 0;
+        for (Solve solve : solves) {
+            i++;
+            if (i > VISIBILE_LIMIT) {
+
+            } else {
+                vbox.getChildren().add(getSolveButton(solve, ao5, ao12));
+            }
+        }
+
+
     }
 
-    private void updateDaily() {
-        while (daily.getChildren().size() > 0) {
-            daily.getChildren().remove(0);
+
+    private void updateDaily(VBox vbox) {
+        while (vbox.getChildren().size() > 0) {
+            vbox.getChildren().remove(0);
         }
 
         ArrayList<Solve> solves = SolveList.getDaily("solves.txt");
 
-        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 5);
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
 
-        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 12);
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
 
         Button title = new Button();
-        title.setText("Today");
-        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
-        daily.getChildren().add(title);
-        daily.getChildren().add(new Text("-------------------------------------"));
+        title.setText("Today"+ ": " + solves.size());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        vbox.getChildren().add(title);
+        vbox.getChildren().add(new Text(delimeter));
 
-        Button pbao5text = new Button();
-        pbao5text.setText("PB ao5: " + String.format("%.3f"
-                , SolveList.getPBAo5Daily()));
-        pbao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
-        daily.getChildren().add(pbao5text);
-
-
-
-        daily.getChildren().add(new Text("-------------------------------------"));
 
             int i = 0;
             for (Solve solve : solves) {
@@ -307,27 +431,29 @@ public class MainMenuController implements Initializable {
                 if (i > VISIBILE_LIMIT) {
 
                 } else {
-                    daily.getChildren().add(getSolveButton(solve, ao5, ao12));
+                    vbox.getChildren().add(getSolveButton(solve, ao5, ao12));
                 }
         }
+
+
     }
 
-    private void updateWeekly() {
+    private void updateWeekly(VBox weekly) {
         while (weekly.getChildren().size() > 0) {
             weekly.getChildren().remove(0);
         }
 
         ArrayList<Solve> solves = SolveList.getWeekly("solves.txt");
 
-        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 5);
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
 
-        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 12);
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
 
         Button title = new Button();
-        title.setText("This week");
-        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        title.setText("This Week"+ ": " + solves.size());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         weekly.getChildren().add(title);
-        weekly.getChildren().add(new Text("-------------------------------------"));
+        weekly.getChildren().add(new Text(delimeter));
         int i = 0;
         for (Solve solve : solves) {
             i++;
@@ -339,22 +465,22 @@ public class MainMenuController implements Initializable {
         }
     }
 
-    private void updateMonthly() {
+    private void updateMonthly(VBox monthly) {
         while (monthly.getChildren().size() > 0) {
             monthly.getChildren().remove(0);
         }
 
         ArrayList<Solve> solves = SolveList.getMonthly("solves.txt");
 
-        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 5);
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
 
-        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 12);
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
 
         Button title = new Button();
-        title.setText("This Month");
-        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333");
+        title.setText("This Month"+ ": " + solves.size());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         monthly.getChildren().add(title);
-        monthly.getChildren().add(new Text("-------------------------------------"));
+        monthly.getChildren().add(new Text(delimeter));
         int i = 0;
         for (Solve solve : solves) {
             i++;

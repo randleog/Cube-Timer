@@ -21,6 +21,11 @@ public class SolveList {
     private static ArrayList<Solve> solves= new ArrayList<>();
 
 
+    private static double dailyAvg = 0;
+    private static double weeklyAvg = 0;
+    private static double monthlyAvg = 0;
+
+
 
     private static ArrayList<Avg> ao5s= new ArrayList<>();
 
@@ -64,7 +69,7 @@ public class SolveList {
         double smallest = LARGE_NUMBER;
 
 
-        for (Avg avg : ao5s) {
+        for (Avg avg : ao12s) {
             if (avg.getAverage() < smallest) {
                 smallest = avg.getAverage();
             }
@@ -87,6 +92,7 @@ public class SolveList {
         return smallest;
 
     }
+
     /**
      * if the score is in the top 10 of the leaderboard for times or points,
      * add it to that leaderboard.
@@ -103,6 +109,10 @@ public class SolveList {
         addSolve(newSolve, tableName);
 
 
+    }
+
+    public static int getSolveCount() {
+        return solves.size();
     }
 
 
@@ -142,7 +152,7 @@ public class SolveList {
 
                 i++;
 
-                bufferAo5.solves.add(score.getTime());
+                bufferAo5.solves.add(score);
                 if (bufferAo5.solves.size() > 5) {
                     bufferAo5.solves.remove(0);
                 }
@@ -156,7 +166,7 @@ public class SolveList {
 
 
 
-                bufferAo12.solves.add(score.getTime());
+                bufferAo12.solves.add(score);
                 if (bufferAo12.solves.size() > 12) {
                     bufferAo12.solves.remove(0);
                 }
@@ -168,7 +178,7 @@ public class SolveList {
                     ao12s.add(tempAvg);
                 }
 
-                bufferAo50.solves.add(score.getTime());
+                bufferAo50.solves.add(score);
                 if (bufferAo50.solves.size() > 50) {
                     bufferAo50.solves.remove(0);
                 }
@@ -189,43 +199,7 @@ public class SolveList {
 
     }
 
-    public static double getPBAo5Daily() {
-        double smallest = LARGE_NUMBER;
 
-        Date date = new Date(System.currentTimeMillis());
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-
-        for (Avg avg : ao5s) {
-
-                if ((calendar.get(Calendar.DAY_OF_YEAR) == avg.getTime().get(Calendar.DAY_OF_YEAR))
-                        && (calendar.get(Calendar.YEAR) == avg.getTime().get(Calendar.YEAR))) {
-                    if (avg.getAverage() < smallest) {
-                        smallest = avg.getAverage();
-                    }
-                }
-        }
-        return smallest;
-    }
-
-    public static double getPBAo12Daily() {
-        double smallest = LARGE_NUMBER;
-
-        Date date = new Date(System.currentTimeMillis());
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-
-        for (Avg avg : ao12s) {
-
-            if ((calendar.get(Calendar.WEEK_OF_YEAR) == avg.getTime().get(Calendar.WEEK_OF_YEAR))
-                    && (calendar.get(Calendar.YEAR) == avg.getTime().get(Calendar.YEAR))) {
-                if (avg.getAverage() < smallest) {
-                    smallest = avg.getAverage();
-                }
-            }
-        }
-        return smallest;
-    }
 
 
 
@@ -420,6 +394,20 @@ public class SolveList {
 
     }
 
+
+    public static ArrayList<Solve> getAllTime() {
+
+        ArrayList<Solve> solvesOld = SolveList.solves;;
+        ArrayList<Solve> solves = new ArrayList();
+        for (Solve score : solvesOld) {
+
+            solves.add(score);
+
+        }
+        return sortByTime(solves);
+
+    }
+
     /**
      * gets the scores from the given table based on the parsed type.
      *
@@ -473,19 +461,14 @@ public class SolveList {
      * @param levelName String name of the level for the scores
      * @return Arraylist of scores in the top 10 of the specified table
      */
-    public static ArrayList<Solve> getLastN(String levelName, int n) {
-        ArrayList<Solve> solvesOld = SolveList.solves;;
+    public static ArrayList<Solve> getLastN(String levelName, int lower, int n) {
+        ArrayList<Solve> solvesOld = SolveList.solves;
         ArrayList<Solve> solves = new ArrayList();
-        int i = 0;
-        for (Solve score : solvesOld) {
-            Date date = new Date(System.currentTimeMillis());
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
 
-            if (i < n) {
-                solves.add(score);
-            }
-            i++;
+        for (int i = lower; i < n; i++) {
+            solves.add(solvesOld.get(i));
+
+
         }
         return sortTimes(solves);
     }

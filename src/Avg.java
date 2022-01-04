@@ -4,7 +4,7 @@ import java.util.Calendar;
 public class Avg implements Comparable {
 
     private static final int LARGE_NUMBER = 999999999;
-    public ArrayList<Double> solves = new ArrayList<>();
+    public ArrayList<Solve> solves = new ArrayList<>();
 
     private Calendar time;
 
@@ -29,15 +29,15 @@ public class Avg implements Comparable {
             double smallest = LARGE_NUMBER;
             double largest = 0;
 
-            for (double solve : solves) {
-                if (solve < smallest) {
-                    smallest = solve;
+            for (Solve solve : solves) {
+                if (solve.getTime() < smallest) {
+                    smallest = solve.getTime();
                 }
 
-                if (solve > largest) {
-                    largest = solve;
+                if (solve.getTime() > largest) {
+                    largest = solve.getTime();
                 }
-                total = total + solve;
+                total = total + solve.getTime();
             }
             total = total - smallest;
             total = total - largest;
