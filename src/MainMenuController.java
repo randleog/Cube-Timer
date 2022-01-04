@@ -43,6 +43,8 @@ public class MainMenuController implements Initializable {
 
     private static String display_type = "daily";
 
+    private static String allTimeDisplay= "all";
+
     @FXML
     private VBox pbs;
 
@@ -121,10 +123,41 @@ public class MainMenuController implements Initializable {
 
         updatePbs(pbs);
 
-        updateAll(allTime);
+
+       getAllTimeBoard(allTime);
+
+    }
 
 
 
+    private void getAllTimeBoard(VBox vbox) {
+
+
+        switch (allTimeDisplay) {
+            case "all" -> updateAll(vbox);
+            case "pbs" -> updateSinglePbs(vbox);
+            case "ao5" -> updateAo5Pbs(vbox);
+            default -> resetBoard(vbox);
+        }
+
+        Button allTimeChange = new Button();
+        allTimeChange.setText("Change Type");
+
+        allTimeChange.setFocusTraversable(false);
+        allTimeChange.setOnAction(new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                switch (allTimeDisplay) {
+                    case "all" -> allTimeDisplay = "pbs";
+                    case "pbs" -> allTimeDisplay = "ao5";
+                    case "ao5" -> allTimeDisplay = "all";
+                    default -> resetBoard(vbox);
+                }
+                updateTimeList();
+            }
+
+        });
+        vbox.getChildren().add(allTimeChange);
     }
 
     private void getTimeLeaderboard(VBox vbox) {
@@ -153,6 +186,8 @@ public class MainMenuController implements Initializable {
 
         });
         vbox.getChildren().add(scrollDown);
+
+
     }
 
     private void resetBoard(VBox vbox) {
@@ -376,9 +411,7 @@ public class MainMenuController implements Initializable {
         }
 
     private void updateAll(VBox vbox) {
-        while (vbox.getChildren().size() > 0) {
-            vbox.getChildren().remove(0);
-        }
+        resetBoard(vbox);
 
         ArrayList<Solve> solves = SolveList.getAllTime();
 
@@ -406,11 +439,69 @@ public class MainMenuController implements Initializable {
 
     }
 
+    private void updateSinglePbs(VBox vbox) {
+        resetBoard(vbox);
+
+        ArrayList<Solve> solves = SolveList.getPbs();
+
+
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
+
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
+
+        Button title = new Button();
+        title.setText("Pbs All Time:"+ ": " + solves.size());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        vbox.getChildren().add(title);
+        vbox.getChildren().add(new Text(delimeter));
+
+
+        int i = 0;
+        for (Solve solve : solves) {
+            i++;
+            if (i > VISIBILE_LIMIT) {
+
+            } else {
+                vbox.getChildren().add(getSolveButton(solve, ao5, ao12));
+            }
+        }
+
+
+    }
+
+
+    private void updateAo5Pbs(VBox vbox) {
+        resetBoard(vbox);
+
+        ArrayList<Solve> solves = SolveList.getPbsAo5();
+
+
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
+
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
+
+        Button title = new Button();
+        title.setText("Pbs All Time:"+ ": " + solves.size());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        vbox.getChildren().add(title);
+        vbox.getChildren().add(new Text(delimeter));
+
+
+        int i = 0;
+        for (Solve solve : solves) {
+            i++;
+            if (i > VISIBILE_LIMIT) {
+
+            } else {
+                vbox.getChildren().add(getSolveButton(solve, ao5, ao12));
+            }
+        }
+
+
+    }
 
     private void updateDaily(VBox vbox) {
-        while (vbox.getChildren().size() > 0) {
-            vbox.getChildren().remove(0);
-        }
+        resetBoard(vbox);
 
         ArrayList<Solve> solves = SolveList.getDaily("solves.txt");
 

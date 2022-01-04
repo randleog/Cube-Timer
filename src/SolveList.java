@@ -33,18 +33,13 @@ public class SolveList {
 
     private static ArrayList<Avg> ao50s= new ArrayList<>();
 
+    private static ArrayList<Solve> pbs= new ArrayList<>();
+
+    private static ArrayList<Solve> ao5pbs= new ArrayList<>();
+
     public static void loadSolves() {
         updateTable(LEADER_BOARD_PATH + "solves.txt", getSolves("solves.txt"));
 
-
-    }
-
-
-    public static void printAverages(ArrayList<Avg> avgs) {
-
-        for (Avg avg : avgs) {
-            System.out.println(avg.getAverage());
-        }
 
     }
 
@@ -145,6 +140,9 @@ public class SolveList {
         Avg bufferAo5 = new Avg();
         Avg bufferAo12 = new Avg();
         Avg bufferAo50 = new Avg();
+
+
+
         try {
             FileWriter writer = new FileWriter(tableName);
             for (Solve score : scores) {
@@ -163,7 +161,6 @@ public class SolveList {
                     tempAvg.setTime(score.getCalendar());
                     ao5s.add(tempAvg);
                 }
-
 
 
                 bufferAo12.solves.add(score);
@@ -190,13 +187,61 @@ public class SolveList {
                     ao50s.add(tempAvg);
                 }
 
+
+
+
             }
+
+
+
             writer.close();
         } catch (IOException e) {
             System.out.println("Cannot read table.");
             e.printStackTrace();
         }
 
+    }
+
+    public static ArrayList<Solve> getPbs() {
+        pbs = new ArrayList<>();
+
+        double lastPb = LARGE_NUMBER;
+
+
+        if (solves.size() > 0) {
+            for (int i = solves.size() - 1; i > 0; i--) {
+                if (solves.get(i).getTime() < lastPb) {
+                    lastPb = solves.get(i).getTime();
+                    pbs.add(solves.get(i));
+                }
+
+            }
+        }
+
+        Collections.reverse(pbs);
+
+        return pbs;
+    }
+
+    public static ArrayList<Solve> getPbsAo5() {
+        ao5pbs = new ArrayList<>();
+
+        double lastPb = LARGE_NUMBER;
+
+
+        if (ao5s.size() > 0) {
+            for (int i = ao5s.size() - 1; i > 0; i--) {
+                if (ao5s.get(i).getAverage() < lastPb) {
+                    lastPb = ao5s.get(i).getAverage();
+                    ao5pbs.add(new Solve ("ao5", ao5s.get(4).getTime().getTimeInMillis(), ao5s.get(i).getAverage(), "N/A"));
+                }
+
+            }
+        }
+
+        Collections.reverse(ao5pbs);
+
+        return ao5pbs;
     }
 
 
