@@ -1,9 +1,7 @@
 import javafx.scene.text.Text;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -37,36 +35,73 @@ public class SolveList {
 
     private static ArrayList<Solve> ao5pbs= new ArrayList<>();
 
+    private static ArrayList<Solve> ao12pbs= new ArrayList<>();
+
     public static void loadSolves() {
         updateTable(LEADER_BOARD_PATH + "solves.txt", getSolves("solves.txt"));
 
-
+        loadMoreStats();
     }
 
-    public static double getpbAo5() {
+    public static void loadMoreStats() {
+        loadPbsAo12();
+        loadPbsAo5();
+        loadPbs();
+    }
+
+    public static ArrayList<Solve> getao5s() {
+        ArrayList<Solve> tempao5s = new ArrayList<>();
+
+        for (Avg avg : ao5s) {
+            tempao5s.add(new Solve (avg.toString(), avg.getTime().getTimeInMillis(), avg.getAverage(), "N/A"));
+        }
 
 
-            double smallest = LARGE_NUMBER;
+
+        return tempao5s;
+    }
+
+    public static ArrayList<Solve> getao12s() {
+        ArrayList<Solve> tempao12s = new ArrayList<>();
+
+        for (Avg avg : ao12s) {
+            tempao12s.add(new Solve (avg.toString(), avg.getTime().getTimeInMillis(), avg.getAverage(), "N/A"));
+        }
 
 
-            for (Avg avg : ao5s) {
-                if (avg.getAverage() < smallest) {
-                    smallest = avg.getAverage();
-                }
+        return tempao12s;
+    }
+
+    public static Avg getpbAo5() {
+
+
+        double smallestVal = LARGE_NUMBER;
+        Avg smallest = new Avg();
+
+
+
+        for (Avg avg : ao5s) {
+            if (avg.getAverage() < smallestVal) {
+                smallestVal = avg.getAverage();
+                smallest = avg;
             }
+        }
         return smallest;
 
     }
 
-    public static double getpbAo12() {
+    public static Avg getpbAo12() {
 
 
-        double smallest = LARGE_NUMBER;
+        double smallestVal = LARGE_NUMBER;
+        Avg smallest = new Avg();
+
 
 
         for (Avg avg : ao12s) {
-            if (avg.getAverage() < smallest) {
-                smallest = avg.getAverage();
+            if (avg.getAverage() < smallestVal) {
+                smallestVal = avg.getAverage();
+                smallest = avg;
             }
         }
         return smallest;
@@ -125,6 +160,28 @@ public class SolveList {
         scores.addAll(getSolves(tableName));
 
         updateTable(timeBoardFile, scores);
+        //appendTable(timeBoardFile, newScore);
+
+    }
+
+
+    private static void appendTable(String tableName, Solve solve) {
+        try {
+
+
+            Scanner scanner = new Scanner( new File(tableName) );
+            String text = scanner.useDelimiter("\\A").nextLine();
+            scanner.close();
+
+            FileWriter writer = new FileWriter(tableName);
+            writer.write(solve.toString() + "\n" + text);
+
+
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Cannot read table.");
+            e.printStackTrace();
+        }
 
     }
 
@@ -146,49 +203,50 @@ public class SolveList {
         try {
             FileWriter writer = new FileWriter(tableName);
             for (Solve score : scores) {
-                writer.append(score.toString() + "\n");
+                if (score.getTime() < 0.5) {
 
-                i++;
+                } else {
+                    writer.append(score.toString() + "\n");
 
-                bufferAo5.solves.add(score);
-                if (bufferAo5.solves.size() > 5) {
-                    bufferAo5.solves.remove(0);
+                    i++;
+
+                    bufferAo5.solves.add(score);
+                    if (bufferAo5.solves.size() > 5) {
+                        bufferAo5.solves.remove(0);
+                    }
+
+                    if (i > 4) {
+                        Avg tempAvg = new Avg();
+                        tempAvg.solves.addAll(bufferAo5.solves);
+                        tempAvg.setTime(score.getCalendar());
+                        ao5s.add(tempAvg);
+                    }
+
+
+                    bufferAo12.solves.add(score);
+                    if (bufferAo12.solves.size() > 12) {
+                        bufferAo12.solves.remove(0);
+                    }
+
+                    if (i > 11) {
+                        Avg tempAvg = new Avg();
+                        tempAvg.solves.addAll(bufferAo12.solves);
+                        tempAvg.setTime(score.getCalendar());
+                        ao12s.add(tempAvg);
+                    }
+
+                    bufferAo50.solves.add(score);
+                    if (bufferAo50.solves.size() > 50) {
+                        bufferAo50.solves.remove(0);
+                    }
+
+                    if (i > 49) {
+                        Avg tempAvg = new Avg();
+                        tempAvg.solves.addAll(bufferAo50.solves);
+                        tempAvg.setTime(score.getCalendar());
+                        ao50s.add(tempAvg);
+                    }
                 }
-
-                if (i > 4) {
-                    Avg tempAvg = new Avg();
-                    tempAvg.solves.addAll(bufferAo5.solves);
-                    tempAvg.setTime(score.getCalendar());
-                    ao5s.add(tempAvg);
-                }
-
-
-                bufferAo12.solves.add(score);
-                if (bufferAo12.solves.size() > 12) {
-                    bufferAo12.solves.remove(0);
-                }
-
-                if (i > 11) {
-                    Avg tempAvg = new Avg();
-                    tempAvg.solves.addAll(bufferAo12.solves);
-                    tempAvg.setTime(score.getCalendar());
-                    ao12s.add(tempAvg);
-                }
-
-                bufferAo50.solves.add(score);
-                if (bufferAo50.solves.size() > 50) {
-                    bufferAo50.solves.remove(0);
-                }
-
-                if (i > 49) {
-                    Avg tempAvg = new Avg();
-                    tempAvg.solves.addAll(bufferAo50.solves);
-                    tempAvg.setTime(score.getCalendar());
-                    ao50s.add(tempAvg);
-                }
-
-
-
 
             }
 
@@ -202,7 +260,7 @@ public class SolveList {
 
     }
 
-    public static ArrayList<Solve> getPbs() {
+    private static void loadPbs() {
         pbs = new ArrayList<>();
 
         double lastPb = LARGE_NUMBER;
@@ -219,11 +277,15 @@ public class SolveList {
         }
 
         Collections.reverse(pbs);
+    }
+
+    public static ArrayList<Solve> getPbs() {
+
 
         return pbs;
     }
 
-    public static ArrayList<Solve> getPbsAo5() {
+    private static void loadPbsAo5() {
         ao5pbs = new ArrayList<>();
 
         double lastPb = LARGE_NUMBER;
@@ -233,18 +295,43 @@ public class SolveList {
             for (int i = ao5s.size() - 1; i > 0; i--) {
                 if (ao5s.get(i).getAverage() < lastPb) {
                     lastPb = ao5s.get(i).getAverage();
-                    ao5pbs.add(new Solve ("ao5", ao5s.get(4).getTime().getTimeInMillis(), ao5s.get(i).getAverage(), "N/A"));
+                    ao5pbs.add(new Solve (ao5s.get(i).toString(), ao5s.get(i).getTime().getTimeInMillis(), ao5s.get(i).getAverage(), "N/A"));
                 }
 
             }
         }
 
         Collections.reverse(ao5pbs);
+    }
+
+    public static ArrayList<Solve> getPbsAo5() {
 
         return ao5pbs;
     }
 
+    private static void loadPbsAo12() {
+        ao12pbs = new ArrayList<>();
 
+        double lastPb = LARGE_NUMBER;
+
+
+        if (ao12s.size() > 0) {
+            for (int i = ao12s.size() - 1; i > 0; i--) {
+                if (ao12s.get(i).getAverage() < lastPb) {
+                    lastPb = ao12s.get(i).getAverage();
+                    ao12pbs.add(new Solve (ao12s.get(i).toString(), ao12s.get(i).getTime().getTimeInMillis(), ao12s.get(i).getAverage(), "N/A"));
+                }
+
+            }
+        }
+
+        Collections.reverse(ao12pbs);
+    }
+
+    public static ArrayList<Solve> getPbsAo12() {
+
+        return ao12pbs;
+    }
 
 
 
@@ -289,7 +376,7 @@ public class SolveList {
             while (in.hasNextLine()) {
                 double time = in.nextDouble();
                 String scramble = in.next();
-                double timeOfCompletion = in.nextDouble();
+                double timeOfCompletion = in.nextLong();
                 String penalty = in.next();
                 Solve score = new Solve(scramble, timeOfCompletion, time, penalty);
 

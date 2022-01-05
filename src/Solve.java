@@ -99,6 +99,14 @@ public class Solve implements Comparable {
             padding = padding + " ";
         }
         BigDecimal accurateTime = new BigDecimal(timeOfCompletion);
+
+        String scramble = this.scramble;
+
+
+        if (scramble.equals("") || scramble.equals(" ")) {
+            scramble = "N/A";
+        }
+
         return String.format("%.3f", time) + " " + scramble + " " + accurateTime + " " + penalty;
     }
 

@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class Avg implements Comparable {
+public class Avg {
 
     private static final int LARGE_NUMBER = 999999999;
     public ArrayList<Solve> solves = new ArrayList<>();
@@ -49,11 +49,19 @@ public class Avg implements Comparable {
 
     }
 
+    public String toString() {
+        String times= "";
 
-    @Override
-    public int compareTo(Object avg) {
-        Avg avg1 = (Avg) avg;
-        return (int)(avg1.getAverage() - this.getAverage());
+        for(Solve solve : solves) {
+            times += String.format("%.3f", solve.getTime()) + ", ";
+        }
+
+        return times;
     }
+
+
+
+
+
 
 }

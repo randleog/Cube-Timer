@@ -43,7 +43,7 @@ public class MainMenuController implements Initializable {
 
     private static String display_type = "daily";
 
-    private static String allTimeDisplay= "all";
+    private static String allTimeDisplay= "pbs";
 
     @FXML
     private VBox pbs;
@@ -91,13 +91,15 @@ public class MainMenuController implements Initializable {
     @FXML
     public void handleKeyboard(KeyEvent event) {
         long currentTime = (System.nanoTime()-timeAtStart);
+        long millisTime = System.currentTimeMillis();
         if (event.getCode() == KeyCode.SPACE) {
             if (running) {
-                Solve newSolve = new Solve(currentScramble, System.currentTimeMillis(), currentTime/SECONDS_AMOUNT, "N/A");
+                updateScramble();
+                Solve newSolve = new Solve(currentScramble, millisTime, currentTime/SECONDS_AMOUNT, "N/A");
                 SolveList.addSolve("solves.txt", newSolve);
                 timer.stop();
                 updateTimerText(currentTime);
-                updateScramble();
+                timerUpdate();
                 running = false;
             } else {
 
@@ -114,8 +116,13 @@ public class MainMenuController implements Initializable {
         currentScramble = generateScramble();
         scrambleLabel.setText(currentScramble);
 
-        updateTimeList();
     }
+
+    private void timerUpdate() {
+        getTimeLeaderboard(daily);
+        updateLast(times);
+    }
+
 
     private void updateTimeList() {
         getTimeLeaderboard(daily);
@@ -134,9 +141,9 @@ public class MainMenuController implements Initializable {
 
 
         switch (allTimeDisplay) {
-            case "all" -> updateAll(vbox);
             case "pbs" -> updateSinglePbs(vbox);
             case "ao5" -> updateAo5Pbs(vbox);
+            case "ao12" -> updateAo12Pbs(vbox);
             default -> resetBoard(vbox);
         }
 
@@ -147,13 +154,16 @@ public class MainMenuController implements Initializable {
         allTimeChange.setOnAction(new EventHandler() {
             @Override
             public void handle(Event event) {
+
                 switch (allTimeDisplay) {
-                    case "all" -> allTimeDisplay = "pbs";
                     case "pbs" -> allTimeDisplay = "ao5";
-                    case "ao5" -> allTimeDisplay = "all";
+                    case "ao5" -> allTimeDisplay = "ao12";
+                    case "ao12" -> allTimeDisplay = "pbs";
                     default -> resetBoard(vbox);
                 }
+                SolveList.loadMoreStats();
                 updateTimeList();
+
             }
 
         });
@@ -165,6 +175,7 @@ public class MainMenuController implements Initializable {
             case "daily" -> updateDaily(vbox);
             case "weekly" -> updateWeekly(vbox);
             case "monthly" -> updateMonthly(vbox);
+            case "all" -> updateAll(vbox);
             default -> resetBoard(vbox);
         }
 
@@ -178,7 +189,8 @@ public class MainMenuController implements Initializable {
                 switch (display_type) {
                     case "daily" -> display_type = "weekly";
                     case "weekly" -> display_type = "monthly";
-                    case "monthly" -> display_type = "daily";
+                    case "monthly" -> display_type = "all";
+                    case "all" -> display_type = "daily";
                     default -> resetBoard(vbox);
                 }
                 updateTimeList();
@@ -238,14 +250,23 @@ public class MainMenuController implements Initializable {
 
         Button pbao5text = new Button();
         pbao5text.setText("PB ao5: " + String.format("%.3f"
-                , SolveList.getpbAo5()));
+                , SolveList.getpbAo5().getAverage()));
         pbao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+
+        Tooltip pbao5Solves= new Tooltip(SolveList.getpbAo5().toString());
+
+        pbao5text.setTooltip(pbao5Solves);
+
         pbs.getChildren().add(pbao5text);
 
         Button pbao12text = new Button();
         pbao12text.setText("PB ao12: " + String.format("%.3f"
-                , SolveList.getpbAo12()));
+                , SolveList.getpbAo12().getAverage()));
         pbao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+
+        Tooltip pbao12Solves= new Tooltip(SolveList.getpbAo12().toString());
+
+        pbao12text.setTooltip(pbao12Solves);
         pbs.getChildren().add(pbao12text);
 
         Button pbao50text = new Button();
@@ -267,6 +288,16 @@ public class MainMenuController implements Initializable {
             times.getChildren().remove(0);
         }
 
+
+
+        Button title = new Button();
+        title.setText("last " + scroll + " - " + (VISIBILE_LIMIT+scroll) + " / " + SolveList.getSolveCount());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        times.getChildren().add(title);
+
+
+        times.getChildren().add(new Text(delimeter));
+
         Button scrollUp = new Button();
         scrollUp.setText("^");
 
@@ -285,14 +316,6 @@ public class MainMenuController implements Initializable {
         });
 
         times.getChildren().add(scrollUp);
-
-        Button title = new Button();
-        title.setText("last " + scroll + " - " + (VISIBILE_LIMIT+scroll) + " / " + SolveList.getSolveCount());
-        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        times.getChildren().add(title);
-
-
-        times.getChildren().add(new Text(delimeter));
 
 
         for (Solve solve : solves) {
@@ -384,28 +407,10 @@ public class MainMenuController implements Initializable {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
             button.setStyle("-fx-text-fill: #bbbbbb;-fx-background-color:#333333;" + fontSize);
-            switch (display_type) {
-                case "daily":
-                    if ((calendar.get(Calendar.DAY_OF_YEAR) == solve.getCalendar().get(Calendar.DAY_OF_YEAR))
-                            && (calendar.get(Calendar.YEAR) == solve.getCalendar().get(Calendar.YEAR))) {
-                        button.setStyle("-fx-text-fill: #bbbbbb;-fx-background-color:#333333;-fx-font-weight: bold;" + fontSize);
+            if ((calendar.get(Calendar.DAY_OF_YEAR) == solve.getCalendar().get(Calendar.DAY_OF_YEAR))
+                    && (calendar.get(Calendar.YEAR) == solve.getCalendar().get(Calendar.YEAR))) {
+                button.setStyle("-fx-text-fill: #bbbbbb;-fx-background-color:#333333;-fx-font-weight: bold;" + fontSize);
 
-                    }
-                    break;
-                case "weekly":
-                    if ((calendar.get(Calendar.WEEK_OF_YEAR) == solve.getCalendar().get(Calendar.WEEK_OF_YEAR))
-                            && (calendar.get(Calendar.YEAR) == solve.getCalendar().get(Calendar.YEAR))) {
-                        button.setStyle("-fx-text-fill: #bbbbbb;-fx-background-color:#333333;-fx-font-weight: bold;" + fontSize);
-
-                    }
-                    break;
-                case "monthly":
-                    if ((calendar.get(Calendar.MONTH) == solve.getCalendar().get(Calendar.MONTH))
-                            && (calendar.get(Calendar.YEAR) == solve.getCalendar().get(Calendar.YEAR))) {
-                        button.setStyle("-fx-text-fill: #bbbbbb;-fx-background-color:#333333;-fx-font-weight: bold;" + fontSize);
-
-                    }
-                    break;
             }
 
         }
@@ -470,6 +475,67 @@ public class MainMenuController implements Initializable {
     }
 
 
+    private void updateAo5s(VBox vbox) {
+        resetBoard(vbox);
+
+        ArrayList<Solve> solves = SolveList.getao5s();
+
+
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
+
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
+
+        Button title = new Button();
+        title.setText("Ao5 All Time:"+ ": " + solves.size());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        vbox.getChildren().add(title);
+        vbox.getChildren().add(new Text(delimeter));
+
+
+        int i = 0;
+        for (Solve solve : solves) {
+            i++;
+            if (i > VISIBILE_LIMIT) {
+
+            } else {
+                vbox.getChildren().add(getSolveButton(solve, ao5, ao12));
+            }
+        }
+
+
+    }
+
+
+    private void updateAo12s(VBox vbox) {
+        resetBoard(vbox);
+
+        ArrayList<Solve> solves = SolveList.getao12s();
+
+
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
+
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
+
+        Button title = new Button();
+        title.setText("Ao12 All Time:"+ ": " + solves.size());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        vbox.getChildren().add(title);
+        vbox.getChildren().add(new Text(delimeter));
+
+
+        int i = 0;
+        for (Solve solve : solves) {
+            i++;
+            if (i > VISIBILE_LIMIT) {
+
+            } else {
+                vbox.getChildren().add(getSolveButton(solve, ao5, ao12));
+            }
+        }
+
+
+    }
+
     private void updateAo5Pbs(VBox vbox) {
         resetBoard(vbox);
 
@@ -481,7 +547,37 @@ public class MainMenuController implements Initializable {
         ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
 
         Button title = new Button();
-        title.setText("Pbs All Time:"+ ": " + solves.size());
+        title.setText("ao5 All Time:"+ ": " + solves.size());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        vbox.getChildren().add(title);
+        vbox.getChildren().add(new Text(delimeter));
+
+
+        int i = 0;
+        for (Solve solve : solves) {
+            i++;
+            if (i > VISIBILE_LIMIT) {
+
+            } else {
+                vbox.getChildren().add(getSolveButton(solve, ao5, ao12));
+            }
+        }
+
+
+    }
+
+    private void updateAo12Pbs(VBox vbox) {
+        resetBoard(vbox);
+
+        ArrayList<Solve> solves = SolveList.getPbsAo12();
+
+
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
+
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
+
+        Button title = new Button();
+        title.setText("ao12s All Time:"+ ": " + solves.size());
         title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         vbox.getChildren().add(title);
         vbox.getChildren().add(new Text(delimeter));
@@ -675,7 +771,7 @@ public class MainMenuController implements Initializable {
 
         initializeScrambleLegal();
         updateScramble();
-
+        updateTimeList();
     }
 }
 
