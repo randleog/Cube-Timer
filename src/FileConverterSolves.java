@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class FileConverterSolves {
 
     public static void main(String[] args) {
-        create("res\\newtxt.txt", convertFile2("res\\og\\wrongFormat.txt"));
+        create("res\\newtxt.txt", convertFile3("res\\og\\Solves_333_Normal.txt"));
     }
 
     public static ArrayList<Solve> convertFile(String fileName) {
@@ -76,6 +76,106 @@ public class FileConverterSolves {
 
     }
 
+    //"19.54";"U' B2 U' L2 D U' B2 D' B R2 D' L B' R' D' L2 F' L D2";"2021-07-11T13:04:48.437+01:00"
+    public static ArrayList<Solve> convertFile3(String fileName) {
+        ArrayList<Solve> solves = SolveList.getSolves("solves.txt");
+        try {
+            Scanner in = new Scanner( new File(fileName));
+
+            while(in.hasNextLine()) {
+                String currentLine = in.nextLine();
+
+                if (currentLine.charAt(0) == '/') {
+
+                } else {
+                    if (solveFromString3(currentLine).getTime() == 0.0) {
+
+                    } else {
+
+                        solves.add(solveFromString3(currentLine));
+                    }
+                }
+
+            }
+
+
+            in.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return solves;
+
+    }
+
+    //"19.54";"U' B2 U' L2 D U' B2 D' B R2 D' L B' R' D' L2 F' L D2";"2021-07-11T13:04:48.437+01:00"
+    // cube timer app2
+    public static Solve solveFromString3(String solveS) {
+         System.out.println(solveS);
+
+        Scanner scanSolve = new Scanner(solveS);
+        scanSolve.useDelimiter(";");
+
+
+        double time = 0;
+        String timeCheck = scanSolve.next().replaceAll("\"", "");
+        time = Double.parseDouble(timeCheck);
+
+
+
+
+        String lastWord = "";
+
+        String scramble = scanSolve.next();
+
+        String timeFrame = scanSolve.next();
+        timeFrame = timeFrame.replaceAll("-", " ");
+        timeFrame = timeFrame.replaceAll("T", " ");
+        timeFrame = timeFrame.replaceAll("\"", "");
+        timeFrame = timeFrame.replaceAll("\\+01:00", "");
+        timeFrame= timeFrame.replaceAll(":", " ");
+        timeFrame= timeFrame.replaceAll("Z", "");
+
+        Solve solve = new Solve(scramble, getCalendar3(timeFrame), time, "N/A");
+
+
+        scanSolve.close();
+
+
+        return solve;
+    }
+
+    //for cube app 2
+    private static long getCalendar3(String timeFrame) {
+        System.out.println(timeFrame);
+
+
+        Scanner dateScan = new Scanner(timeFrame);
+
+        int year = dateScan.nextInt();
+        int month = dateScan.nextInt();
+        int day = dateScan.nextInt();
+
+
+
+
+
+        int hour = dateScan.nextInt();
+        int minute = dateScan.nextInt();
+        double second = dateScan.nextDouble();
+
+        dateScan.close();
+
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month-1, day, hour, minute, 0);
+
+
+
+        return calendar.getTimeInMillis();
+    }
+
+    //for cs timer
     public static Solve solveFromString(String solveS) {
 
 
@@ -136,6 +236,7 @@ public class FileConverterSolves {
     }
 
 
+    //for cuber timer app
     public static Solve solveFromString2(String solveS) {
        // System.out.println(solveS);
 
@@ -171,6 +272,8 @@ public class FileConverterSolves {
 
         return solve;
     }
+
+
 
     private static void create(String tableName, ArrayList<Solve> scores) {
 
