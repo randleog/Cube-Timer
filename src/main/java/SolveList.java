@@ -278,7 +278,7 @@ public class SolveList {
                         ao5s.add(tempAvg);
 
                     } else {
-                        System.out.println(score.toString()+ " no 5");
+                    //    System.out.println(score.toString()+ " no 5");
 
                     }
                     bufferAo5 = new Avg();
@@ -297,7 +297,7 @@ public class SolveList {
                         ao12s.add(tempAvg);
 
                     } else {
-                        System.out.println(score.toString()+ " no 12");
+                      //  System.out.println(score.toString()+ " no 12");
 
                     }
                     bufferAo12 = new Avg();
@@ -316,7 +316,7 @@ public class SolveList {
                         ao50s.add(tempAvg);
 
                     } else {
-                        System.out.println(score.toString() + " no 50");
+                    //    System.out.println(score.toString() + " no 50");
 
                     }
                     bufferAo5 = new Avg();
@@ -758,20 +758,22 @@ public class SolveList {
         ArrayList<Solve> solves = new ArrayList();
 
 
+
         if (solvesJ.size() >= n) {
-            for (int i = lower; i < n; i++) {
+            for (int i = solvesJ.size()-1-lower; i >= solvesJ.size()-n; i--) {
+
                 solves.add(getSolve((JSONArray) solvesJ.get(i)));
 
 
             }
         } else {
-            for (int i = 0; i < solvesJ.size(); i++) {
+            for (int i = solvesJ.size()-1; i >= 0; i--) {
                 solves.add(getSolve((JSONArray) solvesJ.get(i)));
 
 
             }
         }
-        return sortTimes(solves);
+        return solves;
     }
 
 

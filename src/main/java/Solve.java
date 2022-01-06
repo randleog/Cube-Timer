@@ -235,7 +235,7 @@ public class Solve implements Comparable {
     @Override
     public int compareTo(Object score) {
         Solve score1 = (Solve) score;
-        return (int)(score1.getTimeOfCompletion() - this.timeOfCompletion);
+        return (int)(this.timeOfCompletion - (score1.getTimeOfCompletion()));
     }
 
     /**
