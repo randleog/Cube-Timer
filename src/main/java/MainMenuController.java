@@ -108,8 +108,8 @@ public class MainMenuController implements Initializable {
 
     private void timerEnd(long currentTime, long millisTime) {
         updateScramble();
-        Solve newSolve = new Solve(currentScramble, millisTime, currentTime/SECONDS_AMOUNT, "N/A");
-        SolveList.addSolve("solves.txt", newSolve);
+        Solve newSolve = new Solve( currentScramble, millisTime, currentTime/SECONDS_AMOUNT, Solve.NO_PENALTY);
+        SolveList.addSolve( newSolve);
         timer.stop();
         updateTimerText(currentTime);
         updateGui();

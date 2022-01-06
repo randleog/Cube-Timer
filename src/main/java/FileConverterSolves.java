@@ -1,8 +1,10 @@
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -14,6 +16,55 @@ public class FileConverterSolves {
         create("res\\newtxt.txt", convertFile4("res\\og\\solves2.txt"));
     }
 
+    private static void createJSON(ArrayList<Solve> solves) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("key", "solve");
+        JSONArray jsonArray = new JSONArray();
+
+        for (int i =0; i < solves.size(); i++) {
+            JSONArray jsonSolve = new JSONArray();
+            jsonSolve.add(i);
+            jsonSolve.add(solves.get(i).getTime());
+            jsonSolve.add(solves.get(i).getScramble());
+            jsonSolve.add(solves.get(i).getCalendar().getTimeInMillis());
+            jsonSolve.add(solves.get(i).getPenalty());
+            jsonSolve.add(solves.get(i).getaverageN());
+
+            jsonArray.add(jsonSolve);
+        }
+        jsonObject.put("solves", jsonArray);
+
+        try {
+            FileWriter file = new FileWriter("solves.json");
+            file.write(jsonObject.toJSONString());
+            file.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+
+        readJSON();
+
+    }
+
+    private static void readJSON() {
+        JSONParser jsonParser = new JSONParser();
+
+        try {
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(new FileReader("solves.json"));
+
+            JSONArray solves = (JSONArray) (jsonObject.get("solves"));
+
+
+
+            System.out.println(solves.get(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
     public static ArrayList<Solve> convertFile(String fileName) {
         ArrayList<Solve> solves = SolveList.getSolves("solves.txt");
         try {
@@ -137,7 +188,7 @@ public class FileConverterSolves {
         timeFrame= timeFrame.replaceAll(":", " ");
         timeFrame= timeFrame.replaceAll("Z", "");
 
-        Solve solve = new Solve(scramble, getCalendar3(timeFrame), time, "N/A");
+        Solve solve = new Solve( scramble, getCalendar3(timeFrame), time, "N/A");
 
 
         scanSolve.close();
@@ -233,7 +284,7 @@ public class FileConverterSolves {
 
         timeFrame= timeFrame.replaceAll(":", " ");
 
-        Solve solve = new Solve(scramble, getCalendar4(timeFrame), time, "N/A");
+        Solve solve = new Solve( scramble, getCalendar4(timeFrame), time, "N/A");
 
 
         scanSolve.close();
@@ -307,7 +358,7 @@ public class FileConverterSolves {
 
         String dateTime = scanSolve.next();
 
-        Solve solve = new Solve(scramble, getCalendar(date, dateTime), time, "N/A");
+        Solve solve = new Solve( scramble, getCalendar(date, dateTime), time, "N/A");
 
 
         scanSolve.close();
@@ -362,7 +413,7 @@ public class FileConverterSolves {
 
         String dateTime = scanSolve.next();
 
-        Solve solve = new Solve(scramble, getCalendar(date, dateTime), time, "N/A");
+        Solve solve = new Solve( scramble, getCalendar(date, dateTime), time, "N/A");
 
 
         scanSolve.close();

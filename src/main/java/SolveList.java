@@ -3,7 +3,10 @@ import java.io.*;
 
 import java.util.*;
 
-
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  * this class allows access to and updating of the top 10 leaderboards
@@ -17,8 +20,7 @@ public class SolveList {
 
     private static final int LARGE_NUMBER = 999999999;
 
-    private static ArrayList<Solve> solves = new ArrayList<>();
-
+    private static JSONArray solvesJ = new JSONArray();
 
     private static double dailyAvg = 0;
     private static double weeklyAvg = 0;
@@ -38,10 +40,12 @@ public class SolveList {
     private static ArrayList<Solve> ao12pbs = new ArrayList<>();
 
     public static void loadSolves() {
-        updateTable(LEADER_BOARD_PATH + "solves.txt", getSolves("solves.txt"));
-
-        loadMoreStats();
+        loadSolves("solves");
+        loadPbsAo12();
+        loadPbsAo5();
+        loadPbs();
     }
+
 
     public static void loadMoreStats() {
         loadPbsAo12();
@@ -54,7 +58,7 @@ public class SolveList {
 
 
         if (ao5pbs.size() < 1) {
-            return new Solve("no solves", 0, 0, "N/A");
+            return new Solve( "no solves", 0, 0, "N/A");
         }
         return ao5pbs.get(0);
 
@@ -64,7 +68,7 @@ public class SolveList {
 
 
         if (ao12pbs.size() < 1) {
-            return new Solve("no solves", 0, 0, "N/A");
+            return new Solve( "no solves", 0, 0, "N/A");
         }
         return ao12pbs.get(0);
 
@@ -85,79 +89,50 @@ public class SolveList {
 
     }
 
-    /**
-     * if the score is in the top 10 of the leaderboard for times or points,
-     * add it to that leaderboard.
-     *
-     * @param newSolve  Score to add to the leaderboard/s
-     * @param tableName the level the score was achieved on
-     */
-    public static void addSolve(String tableName, Solve newSolve) {
-        createFileIfNotExists(tableName);
 
-        //now add to the two tables for time and score top 10:
-
-        //check if the score is in the top 10 for time
-        addSolve(newSolve, tableName);
+    public static void addSolve(Solve solve) {
+        JSONArray jsonSolve = new JSONArray();
+        jsonSolve.add(getSolveCount());
+        jsonSolve.add(solve.getTime());
+        jsonSolve.add(solve.getScramble());
+        jsonSolve.add(solve.getCalendar().getTimeInMillis());
+        jsonSolve.add(solve.getPenalty());
+        jsonSolve.add(solve.getaverageN());
 
 
+        solvesJ.add(jsonSolve);
+
+        update();
     }
 
-    public static int getSolveCount() {
-        return solves.size();
-    }
+    private static void update() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("key", "solve");
 
 
-    /**
-     * adds a score to the top 10 leaderboard of times
-     * (if they are in the top 10)
-     *
-     * @param newScore  Score to add to the leaderboard
-     * @param tableName level the score was achieved on
-     */
-    private static void addSolve(Solve newScore, String tableName) {
-        String timeBoardFile = LEADER_BOARD_PATH + tableName;
-        ArrayList<Solve> scores = new ArrayList<>();
-        scores.add(newScore);
-        scores.addAll(getSolves(tableName));
-
-        updateTable(timeBoardFile, scores);
-        //appendTable(timeBoardFile, newScore);
-
-    }
-
-
-    /**
-     * Updates the table to show the current scores for that table.
-     *
-     * @param tableName String the file path for the table to update
-     * @param scores    Arraylist of scores to set the table to
-     */
-    private static void updateTable(String tableName, ArrayList<Solve> scores) {
-        SolveList.solves = scores;
-
+        jsonObject.put("solves", solvesJ);
 
         try {
-            FileWriter writer = new FileWriter(tableName);
-            for (Solve score : scores) {
-                if (score.getTime() < 0.5) {
-
-                } else {
-                    writer.append(score.toString() + "\n");
-
-
-                }
-
-            }
-
-            writer.flush();
-            writer.close();
+            FileWriter file = new FileWriter("solves.json");
+            file.write(jsonObject.toJSONString());
+            file.close();
         } catch (IOException e) {
-            System.out.println("Cannot read table.");
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
+
+
+
     }
+    public static int getSolveCount() {
+        return solvesJ.size();
+    }
+
+
+
+
+
 
     private static void loadPbs() {
         pbs = new ArrayList<>();
@@ -165,11 +140,11 @@ public class SolveList {
         double lastPb = LARGE_NUMBER;
 
 
-        if (solves.size() > 0) {
-            for (int i = solves.size() - 1; i > 0; i--) {
-                if (solves.get(i).getTime() < lastPb) {
-                    lastPb = solves.get(i).getTime();
-                    pbs.add(solves.get(i));
+        if (solvesJ.size() > 0) {
+            for (int i = solvesJ.size() - 1; i > 0; i--) {
+                if (getTime((JSONArray) solvesJ.get(i)) < lastPb) {
+                    lastPb = getTime((JSONArray) solvesJ.get(i));
+                    pbs.add(getSolve((JSONArray) solvesJ.get(i)));
                 }
 
             }
@@ -194,7 +169,7 @@ public class SolveList {
             for (int i = ao5s.size() - 1; i > 0; i--) {
                 if (ao5s.get(i).getAverage() < lastPb) {
                     lastPb = ao5s.get(i).getAverage();
-                    ao5pbs.add(new Solve(ao5s.get(i).toString(), ao5s.get(i).getTime().getTimeInMillis(), ao5s.get(i).getAverage(), "N/A"));
+                    ao5pbs.add(new Solve( ao5s.get(i).toString(), ao5s.get(i).getTime().getTimeInMillis(), ao5s.get(i).getAverage(), "N/A"));
                 }
 
             }
@@ -218,7 +193,7 @@ public class SolveList {
             for (int i = ao12s.size() - 1; i > 0; i--) {
                 if (ao12s.get(i).getAverage() < lastPb) {
                     lastPb = ao12s.get(i).getAverage();
-                    ao12pbs.add(new Solve(ao12s.get(i).toString(), ao12s.get(i).getTime().getTimeInMillis(), ao12s.get(i).getAverage(), "N/A"));
+                    ao12pbs.add(new Solve( ao12s.get(i).toString(), ao12s.get(i).getTime().getTimeInMillis(), ao12s.get(i).getAverage(), "N/A"));
                 }
 
             }
@@ -268,27 +243,29 @@ public class SolveList {
         Avg bufferAo5 = new Avg();
         Avg bufferAo12 = new Avg();
         Avg bufferAo50 = new Avg();
-
-
         ArrayList<Solve> solves = new ArrayList<>();
+
+        JSONParser jsonParser = new JSONParser();
+
         try {
-            Scanner in = openLeaderboard(levelName);
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(new FileReader("solves.json"));
+
+            JSONArray solvesJ = (JSONArray) (jsonObject.get("solves"));
 
 
-            while (in.hasNextLine()) {
+            for (int i = 0; i < solvesJ.size(); i++) {
+                JSONArray solve = (JSONArray) (solvesJ.get(i));
 
-                double time = in.nextDouble();
-                String scramble = in.next();
-                double timeOfCompletion = in.nextLong();
-                String penalty = in.next();
+                double time = (double) solve.get(1);
+                String scramble = (String) solve.get(2);
+                long timeOfCompletion = (long) solve.get(3);
 
-                String average = in.next();
+                String penalty = (String) solve.get(4);
+
+                String average = (String) solve.get(5);
 
 
                 Solve score = new Solve(scramble, timeOfCompletion, time, penalty);
-
-
-                score.setPenalty(penalty);
 
                 bufferAo5.solves.add(score);
                 if (average.contains(";5.")) {
@@ -349,43 +326,210 @@ public class SolveList {
 
 
                 solves.add(score);
-                in.nextLine();
             }
-            in.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
 
 
+           // createJSON(solves);
 
             return sortTimes(solves);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to parse leaderboard " + levelName);
-            return null;
-        }
+
 
 
 
     }
-
 
     /**
-     * creates a file if one doesnt already exist, so there will always be
-     * highscore tables for every level
+     * gets the scores from the given table based on the parsed type.
      *
-     * @param level String the level for which a table needs to be made
+     * @param levelName String name of the level for the scores
+     * @return Arraylist of scores in the top 10 of the specified table
      */
-    private static void createFileIfNotExists(String level) {
+    public static void loadSolves(String levelName) {
+
+        Avg bufferAo5 = new Avg();
+        Avg bufferAo12 = new Avg();
+        Avg bufferAo50 = new Avg();
+        ArrayList<Solve> solves = new ArrayList<>();
+
+        JSONParser jsonParser = new JSONParser();
 
         try {
-            File file = new File(LEADER_BOARD_PATH + level);
-            if (file.createNewFile()) {
-                System.out.println("creating file " + file.getName());
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(new FileReader("solves.json"));
+
+            JSONArray solvesJ = (JSONArray) (jsonObject.get("solves"));
+
+
+            for (int i = 0; i < solvesJ.size(); i++) {
+                JSONArray solve = (JSONArray) (solvesJ.get(i));
+
+                double time = (double) solve.get(1);
+                String scramble = (String) solve.get(2);
+                long timeOfCompletion = (long) solve.get(3);
+
+                String penalty = (String) solve.get(4);
+
+                String average = (String) solve.get(5);
+
+
+                Solve score = new Solve(scramble, timeOfCompletion, time, penalty);
+
+                bufferAo5.solves.add(score);
+                if (average.contains(";5.")) {
+                    score.setFirstN(5, true);
+                    if (bufferAo5.solves.size() >= 5) {
+
+                        Avg tempAvg = new Avg();
+                        tempAvg.solves.addAll(bufferAo5.solves);
+                        tempAvg.setTime(score.getCalendar());
+                        ao5s.add(tempAvg);
+
+                    } else {
+                        System.out.println(score.toString()+ " no 5");
+
+                    }
+                    bufferAo5 = new Avg();
+
+                }
+
+
+                bufferAo12.solves.add(score);
+                if (average.contains(";12.")) {
+                    score.setFirstN(12, true);
+                    if (bufferAo12.solves.size() >= 12) {
+
+                        Avg tempAvg = new Avg();
+                        tempAvg.solves.addAll(bufferAo12.solves);
+                        tempAvg.setTime(score.getCalendar());
+                        ao12s.add(tempAvg);
+
+                    } else {
+                        System.out.println(score.toString()+ " no 12");
+
+                    }
+                    bufferAo12 = new Avg();
+
+                }
+
+
+                bufferAo50.solves.add(score);
+                if (average.contains(";50.")) {
+                    score.setFirstN(50, true);
+                    if (bufferAo50.solves.size() >= 50) {
+
+                        Avg tempAvg = new Avg();
+                        tempAvg.solves.addAll(bufferAo50.solves);
+                        tempAvg.setTime(score.getCalendar());
+                        ao50s.add(tempAvg);
+
+                    } else {
+                        System.out.println(score.toString() + " no 50");
+
+                    }
+                    bufferAo5 = new Avg();
+
+                }
+
+
+                solves.add(score);
             }
+
+            SolveList.solvesJ = arrayToJson(sortTimes(solves));
+
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
+
     }
+
+    private static JSONArray arrayToJson(ArrayList<Solve> solves) {
+        JSONArray jsonArray = new JSONArray();
+        for (int i =0; i < solves.size(); i++) {
+            JSONArray jsonSolve = new JSONArray();
+            jsonSolve.add(i);
+            jsonSolve.add(solves.get(i).getTime());
+            jsonSolve.add(solves.get(i).getScramble());
+            jsonSolve.add(solves.get(i).getCalendar().getTimeInMillis());
+            jsonSolve.add(solves.get(i).getPenalty());
+            jsonSolve.add(solves.get(i).getaverageN());
+
+            jsonArray.add(jsonSolve);
+        }
+
+        return  jsonArray;
+    }
+
+    private static JSONArray solveToJSON(Solve solve) {
+        int j =0;
+        for (int i = 0; i < solvesJ.size(); i++) {
+            if (getSolve((JSONArray) solvesJ.get(i)).isEqual(solve)) {
+                j=i;
+            }
+        }
+
+            JSONArray jsonSolve = new JSONArray();
+
+            jsonSolve.add(j);
+            jsonSolve.add(solve.getTime());
+            jsonSolve.add(solve.getScramble());
+            jsonSolve.add(solve.getCalendar().getTimeInMillis());
+            jsonSolve.add(solve.getPenalty());
+            jsonSolve.add(solve.getaverageN());
+
+
+
+
+        return  jsonSolve;
+    }
+
+
+    private static Solve getSolve(JSONArray solve) {
+        int index = (int) solve.get(0);
+        double time = (double) solve.get(1);
+        String scramble = (String) solve.get(2);
+        long timeOfCompletion = (long) solve.get(3);
+
+        String penalty = (String) solve.get(4);
+
+        String average = (String) solve.get(5);
+
+
+        Solve score = new Solve( scramble, timeOfCompletion, time, penalty);
+
+
+        return score;
+
+    }
+
+    private static double getTime(JSONArray solve) {
+
+        double time = (double) solve.get(1);
+
+
+        return time;
+
+    }
+
+    private static String getScramble(JSONArray solve) {
+
+        String scramble = (String) solve.get(2);
+
+
+        return scramble;
+
+    }
+
+
+
 
     public static double getAverage(int number, String levelName) {
 
@@ -401,21 +545,20 @@ public class SolveList {
             }
         }
 
-        ArrayList<Solve> solves = SolveList.solves;
-        if (solves.size() >= number) {
+        if (solvesJ.size() >= number) {
             double total = 0;
             double smallest = LARGE_NUMBER;
             double largest = 0;
 
             for (int i = 0; i < number; i++) {
-                if (solves.get(i).getTime() < smallest) {
-                    smallest = solves.get(i).getTime();
+                if (getTime((JSONArray) solvesJ.get(i)) < smallest) {
+                    smallest = getTime((JSONArray) solvesJ.get(i));
                 }
 
-                if (solves.get(i).getTime() > largest) {
-                    largest = solves.get(i).getTime();
+                if (getTime((JSONArray) solvesJ.get(i)) > largest) {
+                    largest = getTime((JSONArray) solvesJ.get(i));
                 }
-                total = total + solves.get(i).getTime();
+                total = total + getTime((JSONArray) solvesJ.get(i));
             }
             total = total - smallest;
             total = total - largest;
@@ -435,27 +578,29 @@ public class SolveList {
      * @return Arraylist of scores in the top 10 of the specified table
      */
     public static ArrayList<Solve> getDaily(String levelName) {
-        ArrayList<Solve> solvesOld = SolveList.solves;
-        ArrayList<Solve> solves = new ArrayList();
+
+        ArrayList<Solve> solves = new ArrayList<>();
         Date date = new Date(System.currentTimeMillis());
         Calendar calendar;
 
         boolean nolongerTime = false;
-        for (Solve score : solvesOld) {
+
+        for (int i = 0; i < solvesJ.size(); i++) {
             if (!nolongerTime) {
 
                 calendar = Calendar.getInstance();
                 calendar.setTime(date);
 
-                if ((calendar.get(Calendar.DAY_OF_YEAR) == score.getCalendar().get(Calendar.DAY_OF_YEAR))
-                        && (calendar.get(Calendar.YEAR) == score.getCalendar().get(Calendar.YEAR))) {
-                    solves.add(score);
+                if ((calendar.get(Calendar.DAY_OF_YEAR) == getSolve((JSONArray)solvesJ.get(i)).getCalendar().get(Calendar.DAY_OF_YEAR))
+                        && (calendar.get(Calendar.YEAR) ==getSolve((JSONArray)solvesJ.get(i)).getCalendar().get(Calendar.YEAR))) {
+                    solves.add(getSolve((JSONArray)solvesJ.get(i)));
 
                 } else {
                     nolongerTime = true;
                 }
             }
         }
+
 
         return sortByTime(solves);
 
@@ -469,20 +614,28 @@ public class SolveList {
      */
     public static ArrayList<Solve> getWeekly(String levelName) {
 
+        ArrayList<Solve> solves = new ArrayList<>();
+        Date date = new Date(System.currentTimeMillis());
+        Calendar calendar;
 
-        ArrayList<Solve> solvesOld = SolveList.solves;
-        ;
-        ArrayList<Solve> solves = new ArrayList();
-        for (Solve score : solvesOld) {
-            Date date = new Date(System.currentTimeMillis());
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
+        boolean nolongerTime = false;
 
-            if ((calendar.get(Calendar.WEEK_OF_YEAR) == score.getCalendar().get(Calendar.WEEK_OF_YEAR))
-                    && (calendar.get(Calendar.YEAR) == score.getCalendar().get(Calendar.YEAR))) {
-                solves.add(score);
+        for (int i = 0; i < solvesJ.size(); i++) {
+            if (!nolongerTime) {
+
+                calendar = Calendar.getInstance();
+                calendar.setTime(date);
+
+                if ((calendar.get(Calendar.WEEK_OF_YEAR) == getSolve((JSONArray)solvesJ.get(i)).getCalendar().get(Calendar.WEEK_OF_YEAR))
+                        && (calendar.get(Calendar.YEAR) ==getSolve((JSONArray)solvesJ.get(i)).getCalendar().get(Calendar.YEAR))) {
+                    solves.add(getSolve((JSONArray)solvesJ.get(i)));
+
+                } else {
+                    nolongerTime = true;
+                }
             }
         }
+
 
         return sortByTime(solves);
 
@@ -498,30 +651,45 @@ public class SolveList {
      */
     public static ArrayList<Solve> getMonthly(String levelName) {
 
-        ArrayList<Solve> solvesOld = SolveList.solves;
-        ;
-        ArrayList<Solve> solves = new ArrayList();
-        for (Solve score : solvesOld) {
-            Date date = new Date(System.currentTimeMillis());
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
+        ArrayList<Solve> solves = new ArrayList<>();
+        Date date = new Date(System.currentTimeMillis());
+        Calendar calendar;
 
-            if ((calendar.get(Calendar.MONTH) == score.getCalendar().get(Calendar.MONTH))
-                    && (calendar.get(Calendar.YEAR) == score.getCalendar().get(Calendar.YEAR))) {
-                solves.add(score);
+        boolean nolongerTime = false;
+
+        for (int i = 0; i < solvesJ.size(); i++) {
+            if (!nolongerTime) {
+
+                calendar = Calendar.getInstance();
+                calendar.setTime(date);
+
+                if ((calendar.get(Calendar.MONTH) == getSolve((JSONArray)solvesJ.get(i)).getCalendar().get(Calendar.MONTH))
+                        && (calendar.get(Calendar.YEAR) ==getSolve((JSONArray)solvesJ.get(i)).getCalendar().get(Calendar.YEAR))) {
+                    solves.add(getSolve((JSONArray)solvesJ.get(i)));
+
+                } else {
+                    nolongerTime = true;
+                }
             }
         }
-
         return sortByTime(solves);
 
     }
 
 
     public static ArrayList<Solve> getAllTime() {
+        ArrayList<Solve> solves = new ArrayList<>();
+        for (int i = 0; i < solvesJ.size(); i++) {
 
-        ArrayList<Solve> solvesOld = SolveList.solves;
 
-        ArrayList<Solve> solves = new ArrayList<>(solvesOld);
+
+
+                    solves.add(getSolve((JSONArray)solvesJ.get(i)));
+
+
+
+        }
+
 
         return sortByTime(solves);
 
@@ -534,18 +702,15 @@ public class SolveList {
      * @return Arraylist of scores in the top 10 of the specified table
      */
     public static void delete(Solve solve, String levelName) {
-        ArrayList<Solve> solvesOld = SolveList.solves;
-        ;
-        ArrayList<Solve> solves = new ArrayList();
-        for (Solve score : solvesOld) {
-            if (score.isEqual(solve)) {
-
-            } else {
-                solves.add(score);
+        boolean isDeleted = false;
+        int i = 0;
+        while (!isDeleted && i < solvesJ.size()) {
+            if (getSolve((JSONArray) solvesJ.get(i)).isEqual(solve)) {
+                solvesJ.remove(i);
+                isDeleted = true;
             }
+            i++;
         }
-
-        SolveList.solves = solves;
 
 
     }
@@ -557,22 +722,28 @@ public class SolveList {
      * @return Arraylist of scores in the top 10 of the specified table
      */
     public static void setPenalty(Solve solve, String penalty, String levelName) {
-        ArrayList<Solve> solvesOld = SolveList.solves;
-        ;
-        ArrayList<Solve> solves = new ArrayList();
-        for (Solve score : solvesOld) {
-            if (score.isEqual(solve)) {
-                if (score.getPenalty().equals(penalty)) {
-                    score.setPenalty("N/A");
-                } else {
-                    score.setPenalty(penalty);
-                }
 
+
+        if (penalty.equals(Solve.TIME_PENALTY)) {
+            if (!(solve.getPenalty().equals(Solve.TIME_PENALTY))) {
+                solve.setTime(solve.getTime()+2);
             }
-            solves.add(score);
         }
 
-        SolveList.solves = solves;
+        if (solve.getPenalty().equals(Solve.TIME_PENALTY)) {
+            if (!(penalty.equals(Solve.TIME_PENALTY))) {
+                solve.setTime(solve.getTime()-2);
+            }
+        }
+
+        for (int i = 0; i < solvesJ.size(); i++) {
+            if (getSolve((JSONArray) solvesJ.get(i)).isEqual(solve)) {
+                solvesJ.set(i, solveToJSON(solve));
+            }
+        }
+        solve.setPenalty(penalty);
+
+
 
     }
 
@@ -583,19 +754,19 @@ public class SolveList {
      * @return Arraylist of scores in the top 10 of the specified table
      */
     public static ArrayList<Solve> getLastN(String levelName, int lower, int n) {
-        ArrayList<Solve> solvesOld = SolveList.solves;
+
         ArrayList<Solve> solves = new ArrayList();
 
 
-        if (solvesOld.size() >= n) {
+        if (solvesJ.size() >= n) {
             for (int i = lower; i < n; i++) {
-                solves.add(solvesOld.get(i));
+                solves.add(getSolve((JSONArray) solvesJ.get(i)));
 
 
             }
         } else {
-            for (int i = 0; i < solvesOld.size(); i++) {
-                solves.add(solvesOld.get(i));
+            for (int i = 0; i < solvesJ.size(); i++) {
+                solves.add(getSolve((JSONArray) solvesJ.get(i)));
 
 
             }
@@ -603,28 +774,7 @@ public class SolveList {
         return sortTimes(solves);
     }
 
-    /**
-     * gets the scanner for the table required, so it can be read from.
-     *
-     * @param level String name of the levels highscores we are reading
-     * @return
-     */
-    private static Scanner openLeaderboard(String level) {
-        File inputFile = new File(LEADER_BOARD_PATH + level);
 
-
-        createFileIfNotExists(level);
-
-        Scanner in = null;
-        try {
-            in = new Scanner(inputFile);
-
-        } catch (FileNotFoundException e) {
-            System.out.println(OPEN_FILE_ERROR + level);
-            System.exit(0);
-        }
-        return in;
-    }
 
 
 }

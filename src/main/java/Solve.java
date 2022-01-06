@@ -27,9 +27,9 @@ public class Solve implements Comparable {
 
     private String penalty;
 
-    private static final String NO_PENALTY = "N/A";
+    public static final String NO_PENALTY = "N";
 
-    private static final String TIME_PENALTY = "+2";
+    public static final String TIME_PENALTY = "+2";
 
 
 
@@ -46,6 +46,14 @@ public class Solve implements Comparable {
         this.time = time;
 
         this.penalty = penalty;
+
+        if (penalty.equals("N/A")) {
+            this.penalty = NO_PENALTY;
+        }
+    }
+
+    public void setTime(double time) {
+        this.time = time;
     }
 
     public boolean getFirstN(int n) {
@@ -100,6 +108,10 @@ public class Solve implements Comparable {
             }
         }
         this.penalty = penalty;
+
+        if (penalty.equals("N/A")) {
+            this.penalty = NO_PENALTY;
+        }
     }
 
     public String getScramble() {
@@ -108,7 +120,7 @@ public class Solve implements Comparable {
         return formatScramble;
     }
 
-    private String getaverageN() {
+    public String getaverageN() {
         String list = " .";
 
         for (int i = 0; i < firstN.length; i++) {
@@ -135,7 +147,7 @@ public class Solve implements Comparable {
 
 
         if (scramble.equals("") || scramble.equals(" ")) {
-            scramble = "N/A";
+            scramble = NO_PENALTY;
         }
 
 
@@ -143,6 +155,31 @@ public class Solve implements Comparable {
         return String.format("%.3f", time) + " " + scramble
                 + " " + accurateTime + " " + penalty
                 + getaverageN();
+    }
+
+    /**
+     * @return string the data for a score formatted in a presentable way
+     */
+    public String toJSON() {
+        int lettersUnderLimit = 10 - scramble.length();
+        String padding = "";
+        for (int i = 0; i < lettersUnderLimit; i++) {
+            padding = padding + " ";
+        }
+        BigDecimal accurateTime = new BigDecimal(timeOfCompletion);
+
+        String scramble = this.scramble;
+
+
+        if (scramble.equals("") || scramble.equals(" ")) {
+            scramble = NO_PENALTY;
+        }
+        scramble =scramble.replaceAll("\"", "");
+
+
+        return String.format("%.3f", time) + " " + scramble
+                + " " + accurateTime + " " + penalty
+                +  getaverageN();
     }
 
     /**
