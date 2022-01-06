@@ -1,4 +1,4 @@
-package main.java;
+
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -41,9 +41,5 @@ public class Menu {
     }
 
 
-
-    public static double getTimeUnit() {
-        return 1.0/FPS;
-    }
 
 }
