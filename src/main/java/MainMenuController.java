@@ -33,6 +33,10 @@ public class MainMenuController implements Initializable {
 
     private static String delimeter = "------------------------------------------";
 
+    private boolean updatedMonthly = false;
+    private boolean updatedDaily = false;
+    private boolean updatedWeekly = false;
+    private boolean updatedAll = false;
 
     public Timeline timer;
 
@@ -48,6 +52,8 @@ public class MainMenuController implements Initializable {
     private static String display_type = "daily";
 
     private static String allTimeDisplay= "pbs";
+
+    private static double lastTime;
 
     @FXML
     private VBox pbs;
@@ -67,7 +73,7 @@ public class MainMenuController implements Initializable {
     @FXML
     private Text scrambleLabel;
 
-    private static final int VISIBILE_LIMIT = 20;
+    public static final int VISIBILE_LIMIT = 20;
 
     private static final double SECONDS_AMOUNT = 1000000000.0;
 
@@ -108,6 +114,7 @@ public class MainMenuController implements Initializable {
 
     private void timerEnd(long currentTime, long millisTime) {
         updateScramble();
+        lastTime = currentTime/SECONDS_AMOUNT;
         Solve newSolve = new Solve( currentScramble, millisTime, currentTime/SECONDS_AMOUNT, Solve.NO_PENALTY);
         SolveList.addSolve( newSolve);
         timer.stop();
@@ -146,6 +153,10 @@ public class MainMenuController implements Initializable {
 
             getAllTimeBoard(allTime);
             System.out.println("all time: " + (System.currentTimeMillis()-time));
+        } else if (Settings.setting.equals("medium")) {
+            Settings.updatePbs(pbs);
+            System.out.println("pbs: " + (System.currentTimeMillis() - time));
+
         }
 
 
@@ -230,14 +241,94 @@ public class MainMenuController implements Initializable {
     }
 
     private void getTimeLeaderboard(VBox vbox) {
+
+
         switch (display_type) {
-            case "daily" -> updateDaily(vbox);
-            case "weekly" -> updateWeekly(vbox);
-            case "monthly" -> updateMonthly(vbox);
-            case "all" -> updateAll(vbox);
-            default -> resetBoard(vbox);
+            case "daily":
+                updatedWeekly = false;
+                updatedMonthly = false;
+                updatedAll = false;
+                if (SolveList.getDailySize() < VISIBILE_LIMIT) {
+                    updateDaily(vbox);
+                    addChangeTimeButton(vbox);
+                } else {
+                    if ((SolveList.getDailyIndex(VISIBILE_LIMIT).getTime() > lastTime) || !updatedDaily) {
+                        updateWeekly(vbox);
+                        updatedDaily = true;
+                        addChangeTimeButton(vbox);
+
+                    }
+                }
+                break;
+            case "weekly":
+                updatedMonthly = false;
+                updatedDaily = false;
+                updatedAll = false;
+                if (SolveList.getWeeklySize() < VISIBILE_LIMIT) {
+                    updateWeekly(vbox);
+                    addChangeTimeButton(vbox);
+                } else {
+                    if ((SolveList.getWeeklyIndex(VISIBILE_LIMIT).getTime() > lastTime) || !updatedWeekly) {
+                        updateWeekly(vbox);
+                        updatedWeekly = true;
+                        addChangeTimeButton(vbox);
+                    }
+                }
+
+                break;
+            case "monthly":
+                updatedWeekly = false;
+                updatedDaily = false;
+                updatedAll = false;
+                if (SolveList.getMonthlyN() < 1) {
+                    SolveList.loadMonthly("solves");
+                }
+
+                if (SolveList.getMonthlyN() < 1) {
+
+                } else {
+                    if (SolveList.getMonthlyIndex(VISIBILE_LIMIT).getTime() > lastTime) {
+                        SolveList.loadMonthly("solves");
+                    }
+                    if (SolveList.getMonthlySize() < VISIBILE_LIMIT) {
+                        updateMonthly(vbox);
+                        addChangeTimeButton(vbox);
+                    } else {
+
+                        if ((SolveList.getMonthlyIndex(VISIBILE_LIMIT).getTime() > lastTime) || !updatedMonthly) {
+                            updateMonthly(vbox);
+                            updatedMonthly = true;
+                            addChangeTimeButton(vbox);
+                        }
+                    }
+                }
+
+                break;
+            case "all":
+                updatedMonthly = false;
+                updatedDaily = false;
+                updatedAll = false;
+                if (SolveList.getSolveCount() < VISIBILE_LIMIT) {
+                    updateAll(vbox);
+                    addChangeTimeButton(vbox);
+                } else {
+                    if (!updatedAll) {
+                        updateAll(vbox);
+                        updatedAll = true;
+                        addChangeTimeButton(vbox);
+                    }
+                }
+                break;
+            default:
+                resetBoard(vbox);
         }
 
+
+
+
+    }
+
+    private void addChangeTimeButton(VBox vbox) {
         Button scrollDown = new Button();
         scrollDown.setText("Change Time-Span");
 
@@ -257,9 +348,8 @@ public class MainMenuController implements Initializable {
 
         });
         vbox.getChildren().add(scrollDown);
-
-
     }
+
 
     private void resetBoard(VBox vbox) {
         while (vbox.getChildren().size() > 0) {
@@ -543,7 +633,7 @@ public class MainMenuController implements Initializable {
         ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
 
         Button title = new Button();
-        title.setText("Today"+ ": " + solves.size());
+        title.setText("Today"+ ": " + SolveList.getDailyN());
         title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         vbox.getChildren().add(title);
         vbox.getChildren().add(new Text(delimeter));
@@ -574,7 +664,7 @@ public class MainMenuController implements Initializable {
         ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
 
         Button title = new Button();
-        title.setText("This Week"+ ": " + solves.size());
+        title.setText("This Week"+ ": " + SolveList.getWeeklyN());
         title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         weekly.getChildren().add(title);
         weekly.getChildren().add(new Text(delimeter));
@@ -601,7 +691,7 @@ public class MainMenuController implements Initializable {
         ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
 
         Button title = new Button();
-        title.setText("This Month"+ ": " + solves.size());
+        title.setText("This Month"+ ": " + SolveList.getMonthlyN());
         title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         monthly.getChildren().add(title);
         monthly.getChildren().add(new Text(delimeter));
