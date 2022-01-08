@@ -4,6 +4,7 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
 import java.util.ArrayList;
@@ -37,8 +38,8 @@ public class Settings {
     private static Button getSolveButtonRequired(Solve solve) {
         Button button = new Button();
         button.setText(solve.displayString());
-
-        button.setTooltip(new Tooltip(solve.getScramble()));
+        Tooltip toolTip = new Tooltip(solve.getScramble());
+        button.setTooltip(toolTip);
         button.setFocusTraversable(false);
         button.setOnAction(new EventHandler() {
             @Override
@@ -190,9 +191,23 @@ public class Settings {
         pbs.getChildren().add(ao50text);
 
         pbs.getChildren().add(new Text(delimeter));
+
+        Button total = new Button();
+        total.setText("total: " + String.format("%.3f"
+                , SolveList.getTotal()));
+        total.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        pbs.getChildren().add(total);
+
+        Button avg = new Button();
+        avg.setText("average: " + String.format("%.3f"
+                , SolveList.getAverage()));
+        avg.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        pbs.getChildren().add(avg);
+
     }
 
     private static void updatePbsQuality(VBox pbs) {
+
         resetBoard(pbs);
 
         Button title = new Button();
@@ -249,6 +264,20 @@ public class Settings {
                 , SolveList.getpbAo50()));
         pbao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(pbao50text);
+
+        pbs.getChildren().add(new Text(delimeter));
+
+        Button total = new Button();
+        total.setText("total: " + String.format("%.3f"
+                , SolveList.getTotal()));
+        total.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        pbs.getChildren().add(total);
+
+        Button avg = new Button();
+        avg.setText("average: " + String.format("%.3f"
+                , SolveList.getAverage()));
+        avg.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        pbs.getChildren().add(avg);
     }
 
 

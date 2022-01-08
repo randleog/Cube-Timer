@@ -17,6 +17,15 @@ import org.json.simple.parser.ParseException;
  * a pbs file exists, it is assumed that the calculation only needs to be
  * tweaked, and thus not everything is compiled.
  *
+ * todo: leaderboard for beast each day
+ *
+ * todo: for each solve, hold the last 5 solves in it, and an additional comparator for averages.
+ *
+ * todo: add data insights to hte right panel, ie smallest scramble, standard deviation,
+ *
+ * todo: line graph representing all time progression,
+ * and a bar graph showing all solves for a given time period
+ *
  * @author William Randle
  */
 public class SolveList {
@@ -35,6 +44,7 @@ public class SolveList {
     private static int weeklyN = 0;
     private static int monthlyN = 0;
 
+    private static int shortestScramble = 99999999;
 
     private static ArrayList<Avg> ao5s = new ArrayList<>();
 
@@ -54,6 +64,8 @@ public class SolveList {
     private static ArrayList<Solve> weekly = new ArrayList<>();
 
     private static ArrayList<Solve> daily = new ArrayList<>();
+
+    private static double total = 0;
 
     public static void loadSolves() {
         loadSolves("solves");
@@ -105,6 +117,14 @@ public class SolveList {
         }
         return smallest;
 
+    }
+
+    public static double getAverage() {
+        return total / solvesJ.size();
+    }
+
+    public static double getTotal() {
+        return total;
     }
 
     public static int getDailyN(){
@@ -265,7 +285,7 @@ public class SolveList {
      * @return Arraylist of scores in the top 10 of the specified table
      */
     public static ArrayList<Solve> getSolves(String levelName) {
-
+        total = 0;
         Avg bufferAo5 = new Avg();
         Avg bufferAo12 = new Avg();
         Avg bufferAo50 = new Avg();
@@ -283,6 +303,8 @@ public class SolveList {
                 JSONArray solve = (JSONArray) (solvesJ.get(i));
 
                 double time = (double) solve.get(1);
+                total = total + time;
+
                 String scramble = (String) solve.get(2);
                 long timeOfCompletion = (long) solve.get(3);
 
@@ -379,6 +401,7 @@ public class SolveList {
      * @return Arraylist of scores in the top 10 of the specified table
      */
     public static void loadSolves(String levelName) {
+        total = 0;
 
         Avg bufferAo5 = new Avg();
         Avg bufferAo12 = new Avg();
@@ -397,7 +420,14 @@ public class SolveList {
                 JSONArray solve = (JSONArray) (solvesJ.get(i));
 
                 double time = (double) solve.get(1);
+                total = total + time;
                 String scramble = (String) solve.get(2);
+                String scrambleLength = scramble.replaceAll("2", "").replaceAll(" ", "").replaceAll("_", "").replaceAll("'", "");
+                if (scrambleLength.length() < shortestScramble) {
+                    System.out.println(scramble);
+                    shortestScramble = scrambleLength.length();
+                }
+
                 long timeOfCompletion = (long) solve.get(3);
 
                 String penalty = (String) solve.get(4);
@@ -555,19 +585,27 @@ public class SolveList {
     }
 
 
+    public static int getSmallestScramble() {
+
+
+
+        return shortestScramble;
+
+    }
+
 
 
     public static double getAverage(int number, String levelName) {
 
         if (number == 5) {
             if (ao5s.size() > 0) {
-                return ao5s.get(0).getAverage();
+                return ao5s.get(ao5s.size()-1).getAverage();
             }
         }
 
         if (number == 12) {
             if (ao12s.size() > 0) {
-                return ao12s.get(0).getAverage();
+                return ao12s.get(ao12s.size()-1).getAverage();
             }
         }
 
@@ -576,7 +614,7 @@ public class SolveList {
             double smallest = LARGE_NUMBER;
             double largest = 0;
 
-            for (int i = 0; i < number; i++) {
+            for (int i = number; i >= 0; i--) {
                 if (getTime((JSONArray) solvesJ.get(i)) < smallest) {
                     smallest = getTime((JSONArray) solvesJ.get(i));
                 }
@@ -780,20 +818,30 @@ public class SolveList {
 
 
     public static ArrayList<Solve> getAllTime() {
+
+
+
         ArrayList<Solve> solves = new ArrayList<>();
+
         for (int i = 0; i < solvesJ.size(); i++) {
 
 
-
-
-                    solves.add(getSolve((JSONArray)solvesJ.get(i)));
-
-
+            solves.add(getSolve((JSONArray)solvesJ.get(i)));
 
         }
 
 
-        return sortByTime(solves);
+
+        if (solves.size() < 1) {
+            return new ArrayList<>();
+        }
+
+        if (solves.size() < MainMenuController.VISIBILE_LIMIT*2 ) {
+            return sortByTime(solves);
+        } else {
+
+            return sortN(solves, MainMenuController.VISIBILE_LIMIT);
+        }
 
     }
 

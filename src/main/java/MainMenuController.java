@@ -416,6 +416,27 @@ public class MainMenuController implements Initializable {
                 , SolveList.getpbAo50()));
         pbao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(pbao50text);
+
+        pbs.getChildren().add(new Text(delimeter));
+
+        Button total = new Button();
+        total.setText("total: " + String.format("%.3f"
+                , SolveList.getTotal()));
+        total.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        pbs.getChildren().add(total);
+
+        Button avg = new Button();
+        avg.setText("average: " + String.format("%.3f"
+                , SolveList.getAverage()));
+        avg.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        pbs.getChildren().add(avg);
+
+
+        Button scr = new Button();
+        scr.setText("shortest scramble: " + SolveList.getSmallestScramble());
+        scr.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        pbs.getChildren().add(scr);
+
     }
 
     private void updateLast(VBox times) {
@@ -504,7 +525,7 @@ public class MainMenuController implements Initializable {
         ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
 
         Button title = new Button();
-        title.setText("All Time"+ ": " + solves.size());
+        title.setText("All Time"+ ": " + SolveList.getSolveCount());
         title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         vbox.getChildren().add(title);
         vbox.getChildren().add(new Text(delimeter));

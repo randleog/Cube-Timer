@@ -150,7 +150,20 @@ public class Solve implements Comparable {
             scramble = NO_PENALTY;
         }
 
+        scramble = scramble.replaceAll("'", "' ");
+        scramble = scramble.replaceAll("2", "2 ");
 
+        scramble = scramble.replaceAll("RU", "R U");
+        scramble = scramble.replaceAll("UR", "U R");
+
+        scramble = scramble.replaceAll("RB", "R B");
+        scramble = scramble.replaceAll("BR", "B R");
+
+        scramble = scramble.replaceAll("RF", "R F");
+        scramble = scramble.replaceAll("FR", "F R");
+
+        scramble = scramble.replaceAll("RD", "R D");
+        scramble = scramble.replaceAll("D R", "D R");
 
         return String.format("%.3f", time) + " " + scramble
                 + " " + accurateTime + " " + penalty
