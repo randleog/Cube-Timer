@@ -1,0 +1,10 @@
+2022-01-15 18:55:27,530 INFO [main] o.w.t.s.w.s.MainLauncher [MainLauncher.kt:44] Detected os: Windows 10
+2022-01-15 18:55:27,532 WARN [main] o.w.t.s.w.s.MainLauncher [MainLauncher.kt:123] C:\Program Files\Java\jdk-17.0.1\temp-launcher is not a directory.
+2022-01-15 18:55:27,533 INFO [main] o.w.t.s.w.s.MainLauncher [MainLauncher.kt:50] needsReExecing: false
+2022-01-15 18:55:28,118 INFO [main] d.s.SystemTray [SystemTray.java:797] Successfully loaded
+2022-01-15 18:55:28,123 WARN [main] d.s.SystemTray [MenuItem.java:465] Please disable tooltips, as they are not consistent across all platforms and tray types.
+2022-01-15 18:55:28,284 INFO [main] Application [ApplicationEngineEnvironmentReloading.kt:146] Autoreload is disabled because the development mode is off.
+2022-01-15 18:55:28,568 INFO [main] Application [BaseApplicationEngine.kt:52] Responding at http://0.0.0.0:2014
+2022-01-15 18:55:28,569 INFO [main] Application [BaseApplicationEngine.kt:59] Application started in 0.293 seconds.
+2022-01-15 18:55:28,784 INFO [main] o.w.t.s.w.WebscramblesServer [WebscramblesServer.kt:126] TNoodle-WCA-1.1.2 started
+2022-01-15 18:55:28,788 INFO [main] o.w.t.s.w.s.OfflineJarUtils [OfflineJarUtils.kt:23] Attempting to open http://localhost:2014 in browser.

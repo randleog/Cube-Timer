@@ -206,6 +206,7 @@ public class Settings {
         ao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(ao50text);
 
+
         pbs.getChildren().add(new Text(delimeter));
 
         Button total = new Button();
@@ -250,6 +251,18 @@ public class Settings {
                 , SolveList.getAverage(50, "solves.txt")));
         ao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(ao50text);
+
+        Button ao100text = new Button();
+        ao100text.setText("ao100: " + String.format("%.3f"
+                , SolveList.getAverage(100, "solves.txt")));
+        ao100text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        pbs.getChildren().add(ao100text);
+
+        Button ao1000text = new Button();
+        ao1000text.setText("ao1000: " + String.format("%.3f"
+                , SolveList.getAverage(1000, "solves.txt")));
+        ao1000text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        pbs.getChildren().add(ao1000text);
 
         pbs.getChildren().add(new Text(delimeter));
 

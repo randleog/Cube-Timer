@@ -32,10 +32,6 @@ import java.util.*;
 public class MainMenuController implements Initializable {
 
 
-
-    private static ArrayList<String> availableChars = new ArrayList<>();
-    private static ArrayList<String> additionalScramble = new ArrayList<>();
-
     private static String fontSize = "-fx-font-size: 13px";
 
     private static String delimeter = "----------------------------------------------------";
@@ -47,7 +43,7 @@ public class MainMenuController implements Initializable {
 
     public static double timeAddon = 0;//(1.0/Menu.FPS);
 
-    public static int scrambleLength = 25;
+
 
     public Timeline timer;
 
@@ -237,7 +233,7 @@ public class MainMenuController implements Initializable {
     }
 
     private void updateScramble() {
-        currentScramble = generateScramble();
+        currentScramble = Scrambler.generateScramble();
         scrambleLabel.setText(currentScramble);
 
     }
@@ -903,96 +899,8 @@ public class MainMenuController implements Initializable {
 
 
 
-    private static String generateScramble() {
-        String scramble = "";
-        ArrayList<String> letters = new ArrayList<>();
-        while (letters.size() < scrambleLength) {
-            letters.add(getScrambleLetter(letters));
-        }
-
-        for (String letter : letters) {
-            scramble = scramble + letter + additionalScramble.get(Main.random.nextInt(additionalScramble.size())) + " ";
-        }
-
-        return scramble;
-    }
-
-    private static boolean opposite(String moves1, String move2) {
-        switch(moves1) {
-            case "RL":
-                return move2.equals("R");
-            case "LR":
-                return move2.equals("L");
-            case "FB":
-                return move2.equals("F");
-            case "BF":
-                return move2.equals("B");
-            case "UD":
-                return move2.equals("U");
-            case "DU":
-                return move2.equals("D");
-            default:
-                return false;
-        }
-
-    }
 
 
-
-    private static String getScrambleLetter(ArrayList<String> lastMoves) {
-        String newMove = "";
-        if (lastMoves.size() == 0) {
-            newMove = availableChars.get(Main.random.nextInt(availableChars.size()));
-        } else {
-
-            ArrayList<String> tempMoves = getAllowedMoves(lastMoves);
-            newMove = tempMoves.get(Main.random.nextInt(tempMoves.size()));
-        }
-        return newMove;
-
-    }
-
-    private static ArrayList<String> getAllowedMoves(ArrayList<String> lastMoves) {
-        ArrayList<String> tempMoves = new ArrayList<>();
-        tempMoves.addAll(availableChars);
-        if (lastMoves.size()>=1) {
-            tempMoves.removeIf(s -> (s.equals(lastMoves.get(lastMoves.size() - 1))));
-        }
-        if (lastMoves.size()>=2) {
-            tempMoves.removeIf(s -> (opposite(lastMoves.get(lastMoves.size() - 2) + lastMoves.get(lastMoves.size() - 1), s)));
-        }
-        return tempMoves;
-    }
-
-
-    private static void initializeScrambleLegal() {
-        availableChars.add("R");
-        availableChars.add("U");
-        availableChars.add("L");
-        availableChars.add("D");
-        availableChars.add("B");
-        availableChars.add("F");
-
-
-        additionalScramble.add("'");
-        additionalScramble.add("2");
-        additionalScramble.add("");
-
-    }
-
-    private void setSized(Node node) {
-        node.prefHeight(0);
-        node.prefWidth(0);
-        node.minHeight(0);
-        node.minWidth(0);
-    }
-
-    private void maxSize(Node node) {
-        node.prefHeight(681);
-        node.prefWidth(1350);
-        node.minHeight(681);
-        node.minWidth(1350);
-    }
 
 
     @Override
@@ -1012,7 +920,7 @@ public class MainMenuController implements Initializable {
         Main.timerController = this;
         loadGraph();
 
-        initializeScrambleLegal();
+        Scrambler.initializeScrambleLegal();
         updateScramble();
          updateGui();
          rButton.setFocusTraversable(false);

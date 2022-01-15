@@ -15,6 +15,8 @@ public class Avg {
 
     }
 
+
+
     public void setTime(Calendar time) {
         this.time =time;
     }
