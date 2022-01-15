@@ -21,10 +21,14 @@ import org.json.simple.parser.ParseException;
  *
  * todo: for each solve, hold the last 5 solves in it, and an additional comparator for averages.
  *
- * todo: add data insights to hte right panel, ie smallest scramble, standard deviation,
+ * todo: add standard deviation,
  *
  * todo: line graph representing all time progression,
  * and a bar graph showing all solves for a given time period
+ *
+ * todo: colour coded based on the number of solves per day (in the vain of streaks)
+ *
+ * todo: canvas within the vboxes!
  *
  * @author William Randle
  */
@@ -44,6 +48,13 @@ public class SolveList {
     private static int weeklyN = 0;
     private static int monthlyN = 0;
 
+    public static final int streakCount = 50;
+    public static final int streakThreshold = 10;
+    public static int streakDays = 0;
+
+    private static int currentStreak = 0;
+    private static int bestStreak = 0;
+
     private static int shortestScramble = 99999999;
 
     private static ArrayList<Avg> ao5s = new ArrayList<>();
@@ -58,6 +69,8 @@ public class SolveList {
 
     private static ArrayList<Solve> ao12pbs = new ArrayList<>();
 
+    private static ArrayList<Solve> ao50pbs = new ArrayList<>();
+
 
     private static ArrayList<Solve> monthly = new ArrayList<>();
 
@@ -65,12 +78,57 @@ public class SolveList {
 
     private static ArrayList<Solve> daily = new ArrayList<>();
 
+    private static ArrayList<Solve> days= new ArrayList<>();
+    private static ArrayList<Solve> weeks= new ArrayList<>();
+
+    private static ArrayList<Solve> monthDensity = new ArrayList<>();
+
     private static double total = 0;
+
+    private static int mostInDay = 0;
+
+    private static int mostInHour = 0;
+
+    private static long longestTimeWithout = 0;
+
+    private static Calendar bestStreakTime = Calendar.getInstance();
+
+    private static Calendar firstSolve = Calendar.getInstance();
+
+    private static Calendar longestTime = Calendar.getInstance();
+
+    private static Calendar mostDay = Calendar.getInstance();
+    private static Calendar mostHour = Calendar.getInstance();
+
+    public static int getStreakDays() {
+        return streakDays;
+    }
+
+    public static int getMostInDay() {
+        return mostInDay;
+    }
+
+    public static int getMostInHour() {
+        return mostInHour;
+    }
+
+    public static Calendar getMostDay() {
+        return mostDay;
+    }
+
+    public static Calendar getMostHour() {
+        return mostHour;
+    }
+
+    public static ArrayList<Solve> getWeeks() {
+        return weeks;
+    }
 
     public static void loadSolves() {
         loadSolves("solves");
         loadPbsAo12();
         loadPbsAo5();
+        loadPbsAo50();
         loadPbs();
 
         loadMonthly("solves");
@@ -104,19 +162,19 @@ public class SolveList {
 
     }
 
-    public static double getpbAo50() {
+    public static Solve getpbAo50() {
 
 
-        double smallest = LARGE_NUMBER;
-
-
-        for (Avg avg : ao50s) {
-            if (avg.getAverage() < smallest) {
-                smallest = avg.getAverage();
-            }
+        if (ao50pbs.size() < 1) {
+            return new Solve( "no solves", 0, 0, "N/A");
         }
-        return smallest;
+        return ao50pbs.get(0);
 
+
+    }
+
+    public static int getMonthlyD(){
+        return monthDensity.size();
     }
 
     public static double getAverage() {
@@ -174,9 +232,6 @@ public class SolveList {
     public static int getSolveCount() {
         return solvesJ.size();
     }
-
-
-
 
 
 
@@ -244,8 +299,27 @@ public class SolveList {
 
             }
         }
-
         Collections.reverse(ao12pbs);
+
+    }
+
+    private static void loadPbsAo50() {
+        ao50pbs = new ArrayList<>();
+
+        double lastPb = LARGE_NUMBER;
+
+
+        if (ao50s.size() > 0) {
+            for (int i = 0; i < ao50s.size(); i++) {
+                if (ao50s.get(i).getAverage() < lastPb) {
+                    lastPb = ao50s.get(i).getAverage();
+                    ao50pbs.add(new Solve( ao50s.get(i).toString(), ao50s.get(i).getTime().getTimeInMillis(), ao50s.get(i).getAverage(), "N/A"));
+                }
+
+            }
+        }
+        Collections.reverse(ao50pbs);
+
     }
 
     public static ArrayList<Solve> getPbsAo12() {
@@ -253,6 +327,10 @@ public class SolveList {
         return ao12pbs;
     }
 
+    public static ArrayList<Solve> getPbsAo50() {
+
+        return ao50pbs;
+    }
 
     private static ArrayList<Solve> sortByTime(ArrayList<Solve> scores) {
 
@@ -275,6 +353,14 @@ public class SolveList {
 
 
         return scores;
+    }
+
+
+    public static ArrayList<Solve> getMonthDensity() {
+
+
+
+        return monthDensity;
     }
 
 
@@ -388,10 +474,26 @@ public class SolveList {
 
             return sortTimes(solves);
 
+    }
 
+    public static ArrayList<Solve> getdays() {
+        return days;
+    }
 
+    public static long getLongestTimeWithout() {
+        return longestTimeWithout;
+    }
 
+    public static Calendar getLongestTime() {
+        return longestTime;
+    }
 
+    public static Calendar getFirstSolve() {
+        return firstSolve;
+    }
+
+    public static Calendar getBestStreakTime() {
+        return bestStreakTime;
     }
 
     /**
@@ -402,6 +504,23 @@ public class SolveList {
      */
     public static void loadSolves(String levelName) {
         total = 0;
+
+        double monthTotal = 0.01;
+
+        double weekTotal =0.01;
+        int currentWeek = 0;
+        int currentMonth = 0;
+
+        long daysWithout = 0;
+
+        int dailyMost = 0;
+        int hourlyMost = 0;
+
+        int streak = 0;
+
+        double totalDayTime = 0;
+
+        Calendar lastSolveC = Calendar.getInstance();
 
         Avg bufferAo5 = new Avg();
         Avg bufferAo12 = new Avg();
@@ -420,11 +539,13 @@ public class SolveList {
                 JSONArray solve = (JSONArray) (solvesJ.get(i));
 
                 double time = (double) solve.get(1);
+
+
                 total = total + time;
                 String scramble = (String) solve.get(2);
                 String scrambleLength = scramble.replaceAll("2", "").replaceAll(" ", "").replaceAll("_", "").replaceAll("'", "");
                 if (scrambleLength.length() < shortestScramble) {
-                    System.out.println(scramble);
+
                     shortestScramble = scrambleLength.length();
                 }
 
@@ -437,10 +558,95 @@ public class SolveList {
 
                 Solve score = new Solve(scramble, timeOfCompletion, time, penalty);
 
+                if (solves.size() == 0) {
+                    firstSolve = score.getCalendar();
+                }
+
+
+                if ((score.getCalendar().get(Calendar.MONTH) == lastSolveC.get(Calendar.MONTH))
+                        && (score.getCalendar().get(Calendar.YEAR) ==lastSolveC.get(Calendar.YEAR))) {
+                    currentMonth++;
+                    monthTotal+=score.getTime();
+
+                } else {
+                    monthDensity.add(new Solve("average: " + String.format("%.3f"
+                            , monthTotal/currentMonth), score.getCalendar().getTimeInMillis(), currentMonth, "-"));
+                    currentMonth= 1;
+                    monthTotal = 0.01;
+                }
+
+                if ((score.getCalendar().get(Calendar.WEEK_OF_YEAR) == lastSolveC.get(Calendar.WEEK_OF_YEAR))
+                        && (score.getCalendar().get(Calendar.YEAR) ==lastSolveC.get(Calendar.YEAR))) {
+                    currentWeek++;
+                    weekTotal+=score.getTime();
+
+                } else {
+
+                    if (monthTotal/currentMonth > 1) {
+                        weeks.add(new Solve("weekly ", score.getCalendar().getTimeInMillis(), monthTotal / currentMonth, "-"));
+                    }
+                    currentMonth= 1;
+                    monthTotal = 0.01;
+                }
+
+
+                daysWithout = score.getCalendar().getTimeInMillis()-lastSolveC.getTimeInMillis();
+                if (daysWithout > longestTimeWithout) {
+                    longestTimeWithout = daysWithout;
+                    longestTime = lastSolveC;
+                }
+
+
+                if ((score.getCalendar().get(Calendar.DAY_OF_YEAR) == lastSolveC.get(Calendar.DAY_OF_YEAR))
+                        && (score.getCalendar().get(Calendar.YEAR) ==lastSolveC.get(Calendar.YEAR))) {
+
+                    if (dailyMost > mostInDay) {
+                        mostInDay = dailyMost;
+                        mostDay = score.getCalendar();
+                    }
+
+                    totalDayTime+=score.getTime();
+
+                    if (dailyMost == streakCount) {
+                        streak++;
+                        streakDays++;
+                        if (streak > bestStreak) {
+                            bestStreak = streak;
+                            bestStreakTime = score.getCalendar();
+                        }
+                    }
+                    dailyMost++;
+                } else {
+                    if (totalDayTime > 1) {
+                        if (dailyMost < streakCount) {
+                            System.out.println(totalDayTime);
+                            days.add(new Solve("day", score.getCalendar().getTimeInMillis(), totalDayTime / (dailyMost + 1), "-"));
+                            streak = 0;
+                        }
+                    }
+                    totalDayTime = 0.1;
+                    dailyMost = 1;
+
+                }
+
+                if ((score.getCalendar().get(Calendar.HOUR_OF_DAY) == lastSolveC.get(Calendar.HOUR_OF_DAY))
+                        && (score.getCalendar().get(Calendar.DAY_OF_YEAR) ==lastSolveC.get(Calendar.DAY_OF_YEAR))) {
+                    hourlyMost++;
+                    if (hourlyMost > mostInHour) {
+                        mostInHour = hourlyMost;
+                        mostHour = score.getCalendar();
+                    }
+                } else {
+                    hourlyMost = 0;
+                }
+
+                lastSolveC = score.getCalendar();
+
                 bufferAo5.solves.add(score);
                 if (bufferAo5.solves.size() > 4) {
                     score.setFirstN(5, true);
                     if (bufferAo5.solves.size() >= 5) {
+
 
                         Avg tempAvg = new Avg();
                         tempAvg.solves.addAll(bufferAo5.solves);
@@ -457,7 +663,7 @@ public class SolveList {
 
 
                 bufferAo12.solves.add(score);
-                if (bufferAo5.solves.size() > 11) {
+                if (bufferAo12.solves.size() > 11) {
                     score.setFirstN(12, true);
                     if (bufferAo12.solves.size() >= 12) {
 
@@ -476,7 +682,7 @@ public class SolveList {
 
 
                 bufferAo50.solves.add(score);
-                if (bufferAo5.solves.size() > 49) {
+                if (bufferAo50.solves.size() > 49) {
                     score.setFirstN(50, true);
                     if (bufferAo50.solves.size() >= 50) {
 
@@ -489,13 +695,15 @@ public class SolveList {
                         System.out.println(score.toString() + " no 50");
 
                     }
-                    bufferAo5 = new Avg();
+                    bufferAo50 = new Avg();
 
                 }
 
 
                 solves.add(score);
             }
+
+            currentStreak = streak;
 
             SolveList.solvesJ = arrayToJson(sortTimes(solves));
 
@@ -606,6 +814,12 @@ public class SolveList {
         if (number == 12) {
             if (ao12s.size() > 0) {
                 return ao12s.get(ao12s.size()-1).getAverage();
+            }
+        }
+
+        if (number == 50) {
+            if (ao50s.size() > 0) {
+                return ao50s.get(ao50s.size()-1).getAverage();
             }
         }
 
@@ -845,6 +1059,19 @@ public class SolveList {
 
     }
 
+    public static ArrayList<Avg> getAo5s() {
+        return ao5s;
+    }
+
+    public static ArrayList<Avg> getAo12s() {
+        return ao12s;
+    }
+
+    public static ArrayList<Avg> getAo50s() {
+        return ao50s;
+    }
+
+
     /**
      * gets the scores from the given table based on the parsed type.
      *
@@ -863,6 +1090,14 @@ public class SolveList {
         }
 
 
+    }
+
+    public static int getCurrentStreak() {
+        return currentStreak;
+    }
+
+    public static int getBestStreak() {
+        return bestStreak;
     }
 
     /**
@@ -886,12 +1121,19 @@ public class SolveList {
             }
         }
 
+        if (solve.getPenalty().equals(Solve.TIME_PENALTY)) {
+            if (!(penalty.equals(Solve.TIME_PENALTY))) {
+                solve.setTime(solve.getTime()-2);
+            }
+        }
+
+        solve.setPenalty(penalty);
         for (int i = 0; i < solvesJ.size(); i++) {
             if (getSolve((JSONArray) solvesJ.get(i)).isEqual(solve)) {
                 solvesJ.set(i, solveToJSON(solve));
             }
         }
-        solve.setPenalty(penalty);
+
 
 
 
@@ -924,6 +1166,28 @@ public class SolveList {
             }
         }
         return solves;
+    }
+
+    public static ArrayList<Solve> solveLastN(ArrayList<Solve> solves, int lower, int n) {
+
+
+        ArrayList<Solve> newSolves = new ArrayList<>();
+
+        if (solves.size() >= n) {
+            for (int i = solves.size()-1-lower; i >= solves.size()-n; i--) {
+
+                newSolves.add(solves.get(i));
+
+
+            }
+        } else {
+            for (int i = solves.size()-1; i >= 0; i--) {
+                newSolves.add(solves.get(i));
+
+
+            }
+        }
+        return newSolves;
     }
 
 

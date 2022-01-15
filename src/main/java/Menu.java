@@ -12,7 +12,7 @@ public class Menu {
 
     private static final int WIDTH = 1350;
     private static final int HEIGHT = 900;
-    public static final int FPS = 60;
+    public static final int FPS = 100;
 
     public static Scene mainMenu;
 

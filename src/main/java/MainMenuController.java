@@ -7,14 +7,21 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import javafx.util.StringConverter;
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -31,12 +38,16 @@ public class MainMenuController implements Initializable {
 
     private static String fontSize = "-fx-font-size: 13px";
 
-    private static String delimeter = "------------------------------------------";
+    private static String delimeter = "----------------------------------------------------";
 
     private boolean updatedMonthly = false;
     private boolean updatedDaily = false;
     private boolean updatedWeekly = false;
     private boolean updatedAll = false;
+
+    public static double timeAddon = 0;//(1.0/Menu.FPS);
+
+    public static int scrambleLength = 25;
 
     public Timeline timer;
 
@@ -46,6 +57,8 @@ public class MainMenuController implements Initializable {
     private static long timeAtStart;
     public static boolean running = false;
 
+    private static int scrollH = 0;
+
     private static int scroll = 0;
 
     private static int scrollAll = 0;
@@ -54,6 +67,15 @@ public class MainMenuController implements Initializable {
     private static String allTimeDisplay= "pbs";
 
     private static double lastTime;
+
+    @FXML
+    private Button vButton;
+
+    @FXML
+    private Button rButton;
+
+    @FXML
+    private Button lButton;
 
     @FXML
     private VBox pbs;
@@ -73,11 +95,93 @@ public class MainMenuController implements Initializable {
     @FXML
     private Text scrambleLabel;
 
+    private ArrayList<VBox> panels = new ArrayList<>();
+
+    private int scrollMonthly = 0;
+
+    private boolean scrollV = false;
+
+     private LineChart<Number,Number> lineChart;
+
+
+    private int lowerH = -1;
+    private int higherH = 0;
+
     public static final int VISIBILE_LIMIT = 20;
 
     private static final double SECONDS_AMOUNT = 1000000000.0;
 
     private static final int dp = 3;
+
+    private void updatestreakList(VBox times) {
+
+        ArrayList<Solve> solves = SolveList.solveLastN(SolveList.getMonthDensity(), scrollMonthly ,VISIBILE_LIMIT+scrollMonthly);
+
+        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
+
+        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
+
+        while (times.getChildren().size() > 0) {
+            times.getChildren().remove(0);
+        }
+
+
+
+        Button title = new Button();
+        title.setText("last " + scrollMonthly + " - " + (VISIBILE_LIMIT+scrollMonthly) + " / " + SolveList.getMonthlyD());
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
+        times.getChildren().add(title);
+
+
+        times.getChildren().add(new Text(delimeter));
+
+        Button scrollUp = new Button();
+        scrollUp.setText("^");
+
+        scrollUp.setFocusTraversable(false);
+        scrollUp.setOnAction(new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                scrollMonthly--;
+                if (scrollMonthly < 0) {
+                    scrollMonthly = 0;
+                }
+                updatestreakList(times);
+
+            }
+
+        });
+
+        times.getChildren().add(scrollUp);
+
+
+        for (Solve solve : solves) {
+
+
+            times.getChildren().add(getSolveButton(solve, ao5, ao12));
+
+
+        }
+
+        Button scrollDown = new Button();
+        scrollDown.setText("V");
+
+        scrollDown.setFocusTraversable(false);
+        scrollDown.setOnAction(new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                scrollMonthly++;
+                if (scrollMonthly > SolveList.getMonthlyD()-VISIBILE_LIMIT) {
+                    scrollMonthly = SolveList.getMonthlyD()-VISIBILE_LIMIT;
+                }
+                updatestreakList(times);
+            }
+
+        });
+        times.getChildren().add(scrollDown);
+
+    }
+
 
 
     public void updateTimerText(long currentTime) {
@@ -100,25 +204,28 @@ public class MainMenuController implements Initializable {
 
     @FXML
     public void handleKeyboard(KeyEvent event) {
-        long currentTime = (System.nanoTime()-timeAtStart);
-        long millisTime = System.currentTimeMillis();
-        if (event.getCode() == KeyCode.SPACE) {
-            if (running) {
-                timerEnd(currentTime, millisTime);
-            } else {
-                timerStart();
+        if (!scrollV) {
+            long currentTime = (System.nanoTime() - timeAtStart);
+            long millisTime = System.currentTimeMillis();
+            System.out.println(currentTime / SECONDS_AMOUNT);
+            if (event.getCode() == KeyCode.SPACE) {
+                if (running) {
+                    timerEnd(currentTime, millisTime);
+                } else {
+                    timerStart();
+                }
             }
         }
 
     }
 
     private void timerEnd(long currentTime, long millisTime) {
-        updateScramble();
-        lastTime = currentTime/SECONDS_AMOUNT;
-        Solve newSolve = new Solve( currentScramble, millisTime, currentTime/SECONDS_AMOUNT, Solve.NO_PENALTY);
-        SolveList.addSolve( newSolve);
         timer.stop();
-        updateTimerText(currentTime);
+        updateScramble();
+        lastTime = currentTime/SECONDS_AMOUNT- timeAddon;
+        Solve newSolve = new Solve( currentScramble, millisTime, currentTime/SECONDS_AMOUNT- timeAddon, Solve.NO_PENALTY);
+        SolveList.addSolve( newSolve);
+        updateTimerText(currentTime- (long)Math.floor(timeAddon*SECONDS_AMOUNT));
         updateGui();
         running = false;
     }
@@ -135,42 +242,214 @@ public class MainMenuController implements Initializable {
 
     }
 
-
-
     public void updateGui() {
-        long time = System.currentTimeMillis();
-        getTimeLeaderboard(daily);
-        System.out.println("time-based: " + (System.currentTimeMillis()-time));
-        time = System.currentTimeMillis();
-        updateLast(times);
-        System.out.println("lastN: " + (System.currentTimeMillis()-time));
-        time = System.currentTimeMillis();
 
-        if (Settings.setting.equals("quality")) {
-            updatePbs(pbs);
-            System.out.println("pbs: " + (System.currentTimeMillis() - time));
-            time = System.currentTimeMillis();
+        updateLeaderboards();
 
-            getAllTimeBoard(allTime);
-            System.out.println("all time: " + (System.currentTimeMillis()-time));
-        } else if (Settings.setting.equals("medium")) {
-            Settings.updatePbs(pbs);
-            System.out.println("pbs: " + (System.currentTimeMillis() - time));
+
+
+    }
+
+    @FXML
+    private void scrollRight() {
+
+
+
+        scrollH--;
+        fixScrollH();
+        showLeaderboard();
+        updateGui();
+    }
+
+    @FXML
+    private void scrollDown() {
+
+
+
+        scrollV = !scrollV;
+
+        if (scrollV) {
+            vButton.setText("^");
+        } else {
+            vButton.setText("V");
+        }
+        showLeaderboard();
+        updateGui();
+    }
+
+    private void fixScrollH() {
+
+
+
+        if (scrollH > higherH) {
+            scrollH = higherH;
+        }
+
+        if (scrollH < lowerH) {
+            scrollH = lowerH;
+        }
+    }
+
+
+    @FXML
+    private void scrollLeft() {
+
+
+
+        scrollH++;
+        fixScrollH();
+
+        showLeaderboard();
+        updateGui();
+    }
+
+
+
+    private void showLeaderboard() {
+        if (scrollH == 0) {
+            pbs.setVisible(true);
+            times.setVisible(true);
+            daily.setVisible(true);
+            allTime.setVisible(true);
+        } else if (scrollH == 1) {
+            daily.setVisible(true);
+        }
+    }
+
+
+
+    public void updateLeaderboards() {
+        if (!scrollV) {
+
+
+            if (scrollH >= 0 && scrollH <= 3) {
+                if (Settings.setting.equals("quality")) {
+                    getAllTimeBoard(panels.get(scrollH));
+
+                }
+            }
+
+            if (scrollH >= -1 && scrollH <= 2) {
+                getTimeLeaderboard(panels.get(scrollH + 1));
+            }
+
+            if (scrollH >= -2 && scrollH <= 1) {
+                updateLast(panels.get(scrollH + 2));
+            }
+
+            if (scrollH >= -3 && scrollH <= 0) {
+                Settings.updatePbs(panels.get(scrollH + 3));
+            }
+            if (scrollH >= -4 && scrollH <= -1) {
+                updatestreakList(panels.get(scrollH + 4));
+            }
+        } else {
+
+                resetBoard(panels.get(0));
+                resetBoard(panels.get(1));
+                resetBoard(panels.get(2));
+
+                timeGraph((panels.get(3)));
 
         }
+
+
 
 
     }
 
 
 
+    private void timeGraph(VBox times) {
+
+
+        resetBoard(times);
+
+
+        times.getChildren().add(new Text(delimeter + delimeter + delimeter + delimeter));
+
+        times.getChildren().add(lineChart);
+
+    }
+
+
+    private void loadGraph() {
+        ArrayList<Solve> pbSingles = SolveList.getPbs();
+        ArrayList<Solve> pbao5 = SolveList.getPbsAo5();
+        ArrayList<Solve> pbao12 = SolveList.getPbsAo12();
+        ArrayList<Solve> pbao50 = SolveList.getPbsAo50();
+        ArrayList<Solve> weeks = SolveList.getWeeks();
+
+        long firstTime = SolveList.getFirstSolve().getTimeInMillis();
 
 
 
-    private void getAllTimeBoard(VBox vbox) {
-        resetBoard(vbox);
 
 
+        NumberAxis xaxis = new NumberAxis();
+        NumberAxis yaxis = new NumberAxis();
+
+        yaxis.setLabel("time in seconds");
+        xaxis.setLabel("date of completion");
+
+        xaxis.setForceZeroInRange(false);
+        xaxis.setTickLabelFormatter(new StringConverter<Number>() {
+
+            @Override
+            public String toString(Number month) {
+
+                Calendar calender = Calendar.getInstance();
+                calender.setTimeInMillis((long) Math.floor((double)month));
+                return Solve.getDateFormat(calender);
+            }
+
+            @Override
+            public Number fromString(String string) {
+                return 0;
+            }
+
+        });
+        lineChart =
+                new LineChart<>(xaxis,yaxis);
+
+
+
+
+
+        lineChart.setTitle("cubing times");
+        //defining a series
+        XYChart.Series series = new XYChart.Series();
+        series.setName("per week");
+        for (Solve day : weeks) {
+
+            series.getData().add(new XYChart.Data(day.getCalendar().getTimeInMillis(), day.getTime()));
+        }
+        XYChart.Series series2 = new XYChart.Series();
+        series2.setName("pb ao5");
+        for (Solve day : pbao5) {
+
+            series2.getData().add(new XYChart.Data(day.getCalendar().getTimeInMillis(), day.getTime()));
+        }
+
+        XYChart.Series series3 = new XYChart.Series();
+        series3.setName("pb singles");
+        for (Solve day : pbSingles) {
+
+            series3.getData().add(new XYChart.Data(day.getCalendar().getTimeInMillis(), day.getTime()));
+        }
+
+
+
+
+        lineChart.getData().addAll( series, series2,series3);
+
+
+
+
+        times.getChildren().add(lineChart);
+
+    }
+    private void getUpButton(VBox vbox) {
         Button scrollUp = new Button();
         scrollUp.setText("^");
 
@@ -187,14 +466,21 @@ public class MainMenuController implements Initializable {
             }
 
         });
-
         vbox.getChildren().add(scrollUp);
+    }
+
+
+    private void getAllTimeBoard(VBox vbox) {
+        resetBoard(vbox);
+
+
 
 
         switch (allTimeDisplay) {
-            case "pbs" -> updateSinglePbs(vbox);
-            case "ao5" -> updateAo5Pbs(vbox);
-            case "ao12" -> updateAo12Pbs(vbox);
+            case "pbs" -> updateSinglePbs(vbox, "single");
+            case "ao5" -> updateSinglePbs(vbox, "5");
+            case "ao12" -> updateSinglePbs(vbox, "12");
+            case "ao50" -> updateSinglePbs(vbox, "50");
             default -> resetBoard(vbox);
         }
 
@@ -228,7 +514,8 @@ public class MainMenuController implements Initializable {
                 switch (allTimeDisplay) {
                     case "pbs" -> allTimeDisplay = "ao5";
                     case "ao5" -> allTimeDisplay = "ao12";
-                    case "ao12" -> allTimeDisplay = "pbs";
+                    case "ao12" -> allTimeDisplay = "ao50";
+                    case "ao50" -> allTimeDisplay = "pbs";
                     default -> resetBoard(vbox);
                 }
                 SolveList.loadMoreStats();
@@ -307,7 +594,7 @@ public class MainMenuController implements Initializable {
             case "all":
                 updatedMonthly = false;
                 updatedDaily = false;
-                updatedAll = false;
+                updatedWeekly = false;
                 if (SolveList.getSolveCount() < VISIBILE_LIMIT) {
                     updateAll(vbox);
                     addChangeTimeButton(vbox);
@@ -327,6 +614,8 @@ public class MainMenuController implements Initializable {
 
 
     }
+
+
 
     private void addChangeTimeButton(VBox vbox) {
         Button scrollDown = new Button();
@@ -359,85 +648,8 @@ public class MainMenuController implements Initializable {
 
 
 
-    private void updatePbs(VBox pbs) {
-        resetBoard(pbs);
-
-        Button title = new Button();
-        title.setText("Averages");
-        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;-fx-font-size: 18px;");
-        pbs.getChildren().add(title);
-
-        pbs.getChildren().add(new Text(delimeter));
-
-        Button ao5text = new Button();
-        ao5text.setText("ao5: " + String.format("%.3f"
-                , SolveList.getAverage(5, "solves.txt")));
-        ao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        pbs.getChildren().add(ao5text);
 
 
-        Button ao12text = new Button();
-        ao12text.setText("ao12: " + String.format("%.3f"
-                , SolveList.getAverage(12, "solves.txt")));
-        ao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        pbs.getChildren().add(ao12text);
-
-        Button ao50text = new Button();
-        ao50text.setText("ao50: " + String.format("%.3f"
-                , SolveList.getAverage(50, "solves.txt")));
-        ao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        pbs.getChildren().add(ao50text);
-
-        pbs.getChildren().add(new Text(delimeter));
-
-        Button pbao5text = new Button();
-        pbao5text.setText("PB ao5: " + String.format("%.3f"
-                , SolveList.getpbAo5().getTime()));
-        pbao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-
-        Tooltip pbao5Solves= new Tooltip(SolveList.getpbAo5().toString());
-
-        pbao5text.setTooltip(pbao5Solves);
-
-        pbs.getChildren().add(pbao5text);
-
-        Button pbao12text = new Button();
-        pbao12text.setText("PB ao12: " + String.format("%.3f"
-                , SolveList.getpbAo12().getTime()));
-        pbao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-
-        Tooltip pbao12Solves= new Tooltip(SolveList.getpbAo12().toString());
-
-        pbao12text.setTooltip(pbao12Solves);
-        pbs.getChildren().add(pbao12text);
-
-        Button pbao50text = new Button();
-        pbao50text.setText("PB ao50: " + String.format("%.3f"
-                , SolveList.getpbAo50()));
-        pbao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        pbs.getChildren().add(pbao50text);
-
-        pbs.getChildren().add(new Text(delimeter));
-
-        Button total = new Button();
-        total.setText("total: " + String.format("%.3f"
-                , SolveList.getTotal()));
-        total.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        pbs.getChildren().add(total);
-
-        Button avg = new Button();
-        avg.setText("average: " + String.format("%.3f"
-                , SolveList.getAverage()));
-        avg.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        pbs.getChildren().add(avg);
-
-
-        Button scr = new Button();
-        scr.setText("shortest scramble: " + SolveList.getSmallestScramble());
-        scr.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        pbs.getChildren().add(scr);
-
-    }
 
     private void updateLast(VBox times) {
 
@@ -544,9 +756,20 @@ public class MainMenuController implements Initializable {
 
     }
 
-    private void updateSinglePbs(VBox vbox) {
+    private void updateSinglePbs(VBox vbox, String type) {
 
-        ArrayList<Solve> solves = SolveList.getPbs();
+
+
+        ArrayList<Solve> solves = new ArrayList<>();
+        if (type.equals("single")) {
+            solves = SolveList.getPbs();
+        } else    if (type.equals("5")) {
+            solves =SolveList.getPbsAo5();
+        }else    if (type.equals("12")) {
+            solves =SolveList.getPbsAo12();
+        }else    if (type.equals("50")) {
+            solves =SolveList.getPbsAo50();
+        }
         if (scrollAll > solves.size()-VISIBILE_LIMIT) {
             scrollAll = solves.size()-VISIBILE_LIMIT;
         }
@@ -556,22 +779,36 @@ public class MainMenuController implements Initializable {
         ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
 
         Button title = new Button();
-        title.setText("Pbs All Time: " + scrollAll + " - " + (VISIBILE_LIMIT+scrollAll) + " / " + solves.size());
+        title.setText(type + " Pbs All Time: " + scrollAll + " - " + (VISIBILE_LIMIT+scrollAll) + " / " + solves.size());
         title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         vbox.getChildren().add(title);
         vbox.getChildren().add(new Text(delimeter));
-
+        getUpButton(vbox);
 
         if (solves.size() <= VISIBILE_LIMIT) {
             for (Solve solve : solves) {
                 vbox.getChildren().add(getSolveButton(solve, ao5, ao12));
             }
         } else {
-            for (int i = scrollAll; i < solves.size(); i++) {
-                if (i-scrollAll >= VISIBILE_LIMIT) {
+            if (scrollAll < 0)  {
+                for (int i = 0; i < solves.size(); i++) {
 
-                } else {
-                    vbox.getChildren().add(getSolveButton(solves.get(i), ao5, ao12));
+
+                    if (i  >= VISIBILE_LIMIT) {
+
+                    } else {
+                        vbox.getChildren().add(getSolveButton(solves.get(i), ao5, ao12));
+                    }
+                }
+            } else {
+                for (int i = scrollAll; i < solves.size(); i++) {
+
+
+                    if (i >= VISIBILE_LIMIT) {
+
+                    } else {
+                        vbox.getChildren().add(getSolveButton(solves.get(i), ao5, ao12));
+                    }
                 }
             }
         }
@@ -580,69 +817,6 @@ public class MainMenuController implements Initializable {
 
 
 
-    private void updateAo5Pbs(VBox vbox) {
-
-
-        ArrayList<Solve> solves = SolveList.getPbsAo5();
-        if (scrollAll > solves.size()-VISIBILE_LIMIT) {
-            scrollAll = solves.size()-VISIBILE_LIMIT;
-        }
-
-        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
-
-        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
-
-        Button title = new Button();
-        title.setText("ao5 All Time:"+ ": " + solves.size());
-        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        vbox.getChildren().add(title);
-        vbox.getChildren().add(new Text(delimeter));
-
-
-        int i = 0;
-        for (Solve solve : solves) {
-            i++;
-            if (i > VISIBILE_LIMIT) {
-
-            } else {
-                vbox.getChildren().add(getSolveButton(solve, ao5, ao12));
-            }
-        }
-
-
-    }
-
-    private void updateAo12Pbs(VBox vbox) {
-
-
-        ArrayList<Solve> solves = SolveList.getPbsAo12();
-        if (scrollAll > solves.size()-VISIBILE_LIMIT) {
-            scrollAll = solves.size()-VISIBILE_LIMIT;
-        }
-
-        ArrayList<Solve> ao5 = SolveList.getLastN("solves.txt", 0, 5);
-
-        ArrayList<Solve> ao12 = SolveList.getLastN("solves.txt", 0, 12);
-
-        Button title = new Button();
-        title.setText("ao12s All Time:"+ ": " + solves.size());
-        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        vbox.getChildren().add(title);
-        vbox.getChildren().add(new Text(delimeter));
-
-
-        int i = 0;
-        for (Solve solve : solves) {
-            i++;
-            if (i > VISIBILE_LIMIT) {
-
-            } else {
-                vbox.getChildren().add(getSolveButton(solve, ao5, ao12));
-            }
-        }
-
-
-    }
 
     private void updateDaily(VBox vbox) {
         resetBoard(vbox);
@@ -732,7 +906,7 @@ public class MainMenuController implements Initializable {
     private static String generateScramble() {
         String scramble = "";
         ArrayList<String> letters = new ArrayList<>();
-        while (letters.size() < 20) {
+        while (letters.size() < scrambleLength) {
             letters.add(getScrambleLetter(letters));
         }
 
@@ -806,9 +980,28 @@ public class MainMenuController implements Initializable {
 
     }
 
+    private void setSized(Node node) {
+        node.prefHeight(0);
+        node.prefWidth(0);
+        node.minHeight(0);
+        node.minWidth(0);
+    }
+
+    private void maxSize(Node node) {
+        node.prefHeight(681);
+        node.prefWidth(1350);
+        node.minHeight(681);
+        node.minWidth(1350);
+    }
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        panels.add(allTime);
+        panels.add(daily);
+        panels.add(times);
+        panels.add(pbs);
+
         Settings.controller = this;
         int fpsTime = 1000 / Menu.FPS;
         timer = new Timeline(new KeyFrame(Duration.millis(fpsTime), (ActionEvent event) -> {
@@ -817,10 +1010,18 @@ public class MainMenuController implements Initializable {
         }));
         timer.setCycleCount(Timeline.INDEFINITE);
         Main.timerController = this;
+        loadGraph();
 
         initializeScrambleLegal();
         updateScramble();
-        updateGui();
+         updateGui();
+         rButton.setFocusTraversable(false);
+         lButton.setFocusTraversable(false);
+         vButton.setFocusTraversable(false);
+
+
+
+
     }
 }
 

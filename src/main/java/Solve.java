@@ -50,6 +50,17 @@ public class Solve implements Comparable {
         if (penalty.equals("N/A")) {
             this.penalty = NO_PENALTY;
         }
+
+        scramble = scramble.replaceAll("_", " ");
+        scramble = scramble.replaceAll("'", "' ");
+        scramble = scramble.replaceAll("2", "2 ");
+
+
+        while (!(scramble.replaceAll("  ", " ").equals(scramble))) {
+            scramble = scramble.replaceAll("  ", " ");
+        }
+
+        this.scramble = scramble;
     }
 
     public void setTime(double time) {
@@ -115,9 +126,13 @@ public class Solve implements Comparable {
     }
 
     public String getScramble() {
-        String formatScramble = scramble.replaceAll("_", " ");
+        if (scramble.equals("") || scramble.equals(" ")) {
+            scramble = NO_PENALTY;
+        }
 
-        return formatScramble;
+
+
+        return scramble;
     }
 
     public String getaverageN() {
@@ -149,21 +164,6 @@ public class Solve implements Comparable {
         if (scramble.equals("") || scramble.equals(" ")) {
             scramble = NO_PENALTY;
         }
-
-        scramble = scramble.replaceAll("'", "' ");
-        scramble = scramble.replaceAll("2", "2 ");
-
-        scramble = scramble.replaceAll("RU", "R U");
-        scramble = scramble.replaceAll("UR", "U R");
-
-        scramble = scramble.replaceAll("RB", "R B");
-        scramble = scramble.replaceAll("BR", "B R");
-
-        scramble = scramble.replaceAll("RF", "R F");
-        scramble = scramble.replaceAll("FR", "F R");
-
-        scramble = scramble.replaceAll("RD", "R D");
-        scramble = scramble.replaceAll("D R", "D R");
 
         return String.format("%.3f", time) + " " + scramble
                 + " " + accurateTime + " " + penalty
@@ -224,11 +224,17 @@ public class Solve implements Comparable {
            return penalty;
     }
 
-    private String getTimeFormat(Calendar calendar) {
+    public static String getTimeFormat(Calendar calendar) {
         return + calendar.get(Calendar.HOUR) + ":"
                 + calendar.get(Calendar.MINUTE) + ":"
                 + calendar.get(Calendar.SECOND) + " "
                 + calendar.get(Calendar.DAY_OF_MONTH)
+                + "/" + (calendar.get(Calendar.MONTH)+1)
+                + "/" + calendar.get(Calendar.YEAR);
+    }
+
+    public static String getDateFormat(Calendar calendar) {
+        return calendar.get(Calendar.DAY_OF_MONTH)
                 + "/" + (calendar.get(Calendar.MONTH)+1)
                 + "/" + calendar.get(Calendar.YEAR);
     }

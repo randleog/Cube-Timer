@@ -3,10 +3,15 @@
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,7 +25,7 @@ public class Settings {
 
     private static String fontSize = "-fx-font-size: 13px";
 
-    private static String delimeter = "------------------------------------------";
+    private static String delimeter = "----------------------------------------------------------";
 
     public static Button getSolveButton(Solve solve, ArrayList<Solve> ao5, ArrayList<Solve> ao12) {
         Button button= getSolveButtonRequired(solve);
@@ -39,6 +44,8 @@ public class Settings {
         Button button = new Button();
         button.setText(solve.displayString());
         Tooltip toolTip = new Tooltip(solve.getScramble());
+        toolTip.setShowDelay(Duration.seconds(0.3));
+    //    toolTip.setHideDelay(Duration.seconds(3));
         button.setTooltip(toolTip);
         button.setFocusTraversable(false);
         button.setOnAction(new EventHandler() {
@@ -48,9 +55,11 @@ public class Settings {
                 ButtonType penalty = new ButtonType("+2", ButtonBar.ButtonData.OK_DONE);
                 ButtonType dnf = new ButtonType("dnf", ButtonBar.ButtonData.OK_DONE);
                 ButtonType delete = new ButtonType("delete", ButtonBar.ButtonData.OK_DONE);
+                ButtonType copy = new ButtonType("copy", ButtonBar.ButtonData.OK_DONE);
+
                 ButtonType cancel = new ButtonType("cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-                Alert penalties = new Alert(Alert.AlertType.CONFIRMATION, "", penalty, dnf, delete, cancel);
+                Alert penalties = new Alert(Alert.AlertType.CONFIRMATION, "", penalty, dnf, delete,copy, cancel);
                 penalties.setTitle("apply penalties");
                 penalties.setHeaderText("choose what you want to do with this solve");
 
@@ -63,7 +72,14 @@ public class Settings {
                     controller.updateGui();
                 } else if (apply.get().equals(delete)) {
                     SolveList.delete(solve, "solves.txt");
+                    System.out.println("delete");
                     controller.updateGui();
+
+                } else if (apply.get().equals(copy)) {
+                    StringSelection stringSelection = new StringSelection(solve.getScramble());
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(stringSelection, null);
+
                 } else {
 
                 }
@@ -207,12 +223,11 @@ public class Settings {
     }
 
     private static void updatePbsQuality(VBox pbs) {
-
         resetBoard(pbs);
 
         Button title = new Button();
-        title.setText("Averages");
-        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;-fx-font-size: 18px;");
+        title.setText("info");
+        title.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
         pbs.getChildren().add(title);
 
         pbs.getChildren().add(new Text(delimeter));
@@ -240,7 +255,7 @@ public class Settings {
 
         Button pbao5text = new Button();
         pbao5text.setText("PB ao5: " + String.format("%.3f"
-                , SolveList.getpbAo5().getTime()));
+                , SolveList.getpbAo5().getTime()) + " | " + Solve.getDateFormat(SolveList.getpbAo5().getCalendar()));
         pbao5text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
 
         Tooltip pbao5Solves= new Tooltip(SolveList.getpbAo5().toString());
@@ -251,7 +266,7 @@ public class Settings {
 
         Button pbao12text = new Button();
         pbao12text.setText("PB ao12: " + String.format("%.3f"
-                , SolveList.getpbAo12().getTime()));
+                , SolveList.getpbAo12().getTime()) + " | " + Solve.getDateFormat(SolveList.getpbAo12().getCalendar()) );
         pbao12text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
 
         Tooltip pbao12Solves= new Tooltip(SolveList.getpbAo12().toString());
@@ -259,27 +274,51 @@ public class Settings {
         pbao12text.setTooltip(pbao12Solves);
         pbs.getChildren().add(pbao12text);
 
-        Button pbao50text = new Button();
-        pbao50text.setText("PB ao50: " + String.format("%.3f"
-                , SolveList.getpbAo50()));
-        pbao50text.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        pbs.getChildren().add(pbao50text);
+        pbs.getChildren().add(styleButton("PB ao50: " + String.format("%.3f"
+                , SolveList.getpbAo50().getTime()) + " | " + Solve.getDateFormat(SolveList.getpbAo50().getCalendar())));
+
 
         pbs.getChildren().add(new Text(delimeter));
 
-        Button total = new Button();
-        total.setText("total: " + String.format("%.3f"
-                , SolveList.getTotal()));
-        total.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        pbs.getChildren().add(total);
+        pbs.getChildren().add(styleButton("total: " + String.format("%.3f"
+                , SolveList.getTotal())));
 
-        Button avg = new Button();
-        avg.setText("average: " + String.format("%.3f"
-                , SolveList.getAverage()));
-        avg.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
-        pbs.getChildren().add(avg);
+
+
+        pbs.getChildren().add(styleButton("average: " + String.format("%.3f"
+                , SolveList.getAverage())));
+
+        pbs.getChildren().add(styleButton("shortest scramble: " + SolveList.getSmallestScramble()));
+
+        pbs.getChildren().add(new Text(delimeter));
+
+        pbs.getChildren().add(styleButton("In day: " + SolveList.getMostInDay() + " | " + Solve.getDateFormat(SolveList.getMostDay())));
+
+        pbs.getChildren().add(styleButton("In Hour: " + SolveList.getMostInHour() + " | " + Solve.getTimeFormat(SolveList.getMostHour())));
+
+        pbs.getChildren().add(styleButton("longest break: " + SolveList.getLongestTimeWithout()/(1000*60*60*24) + "days on: " + Solve.getDateFormat(SolveList.getLongestTime())));
+
+        pbs.getChildren().add(styleButton("first solve on: " + Solve.getDateFormat(SolveList.getFirstSolve())));
+
+
+        pbs.getChildren().add(new Text(delimeter));
+
+        pbs.getChildren().add(styleButton("streaks ( " + SolveList.streakCount + " solves in a day): "));
+
+        pbs.getChildren().add(styleButton("current streak: " + SolveList.getCurrentStreak()));
+
+        pbs.getChildren().add(styleButton("best streak: " + SolveList.getBestStreak() + " on: " + Solve.getDateFormat(SolveList.getBestStreakTime())));
+
+        pbs.getChildren().add(styleButton("streak days: " + SolveList.getStreakDays()));
+
     }
+    private static Button styleButton(String text) {
+        Button button = new Button();
+        button.setText(text);
+        button.setStyle("-fx-text-fill: lime;-fx-background-color:#333333;" + fontSize);
 
+        return button;
+    }
 
     private static void resetBoard(VBox vbox) {
         while (vbox.getChildren().size() > 0) {

@@ -41,7 +41,10 @@ public class Main extends Application {
         Menu.loadMenus();
 
 
+
+
         Main.scene = primaryStage;
+  
 
         setMainMenu();
         scene.show();

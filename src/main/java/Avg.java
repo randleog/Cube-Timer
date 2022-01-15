@@ -1,6 +1,7 @@
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 
 public class Avg {
 
@@ -53,8 +54,17 @@ public class Avg {
     public String toString() {
         String times= "";
 
+
+
         for(Solve solve : solves) {
-            times += String.format("%.3f", solve.getTime()) + ", ";
+            if (solve.isEqual(Collections.max(solves, Solve.ScoreTimeComparator))) {
+                times += "(" + String.format("%.3f", solve.getTime()) + "), ";
+            } else if (solve.isEqual(Collections.min(solves, Solve.ScoreTimeComparator))) {
+                times += "(" + String.format("%.3f", solve.getTime()) + "), ";
+            } else {
+
+                times += String.format("%.3f", solve.getTime()) + ", ";
+            }
         }
 
         return times;
