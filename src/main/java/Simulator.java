@@ -27,12 +27,12 @@ public class Simulator {
     String[][] br = new String[4][3];
 
     public static void main(String[] args) {
-        System.out.println("rubiks simulator");
+      //  System.out.println("rubiks simulator");
 
         Simulator simulator = new Simulator();
+        simulator.scramble("R U B R B"); // R' U2 L U B' L2 B2 L2 U2 R' U' R L2 B U' L B2 R B L D' R' B' ");
 
-
-        System.out.println(simulator.getCube());
+      //  System.out.println(simulator.getCube());
     }
 
     public void scramble(String scramble) {
@@ -54,6 +54,8 @@ public class Simulator {
         scramble=scramble.replaceAll(" ", "");
 
         for (int i = 0; i < scramble.length(); i++) {
+            System.out.println(getCube());
+            System.out.println(scramble.charAt(i));
             move(scramble.charAt(i));
         }
         System.out.println(scramble);
@@ -397,9 +399,9 @@ public class Simulator {
 
     private void setBR() {
 
-        w[2] = br[0][0];
+        w[0] = br[0][0];
         w[1] = br[0][1];
-        w[0] = br[0][2];
+        w[2] = br[0][2];
 
         o[0] = br[1][0];
         o[3] =  br[1][1];
@@ -410,9 +412,9 @@ public class Simulator {
         y[7] = br[2][2];
 
 
-        r[2] = br[3][0];
+        r[7] = br[3][0];
         r[4] = br[3][1];
-        r[7] = br[3][2];
+        r[2] = br[3][2];
 
 
 
@@ -498,6 +500,20 @@ public class Simulator {
             case 'D' -> DMove();
             case 'B' -> BMove();
             case 'U' -> UMove();
+        }
+
+
+    }
+
+    public void move(String move) {
+
+        switch (move) {
+            case "R" -> RMove();
+            case "O" -> LMove();
+            case "G" -> FMove();
+            case "Y" -> DMove();
+            case "B" -> BMove();
+            case "W" -> UMove();
         }
 
 

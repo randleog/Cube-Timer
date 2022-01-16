@@ -62,7 +62,7 @@
                         <Font name="AdobeArabic-Regular" size="40.0" />
                      </font>
                   </Text>
-                  <Text fx:id="timeLabel" fill="#00ff25" strokeType="OUTSIDE" strokeWidth="0.0" text="Time" wrappingWidth="232.037109375">
+                  <Text fx:id="timeLabel" fill="#00ff25" strokeType="OUTSIDE" strokeWidth="0.0" text="Time" wrappingWidth="485.037109375">
                      <font>
                         <Font name="Monospaced Regular" size="95.0" />
                      </font>
@@ -132,13 +132,13 @@
                   </GridPane>
                   <GridPane fx:id="b" GridPane.columnIndex="3" GridPane.rowIndex="1">
                      <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="31.0" minWidth="10.0" prefWidth="31.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="43.0" minWidth="10.0" prefWidth="32.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="50.0" minWidth="10.0" prefWidth="33.0" />
                      </columnConstraints>
                      <rowConstraints>
-                        <RowConstraints maxHeight="19.0" minHeight="0.0" prefHeight="19.0" vgrow="SOMETIMES" />
-                        <RowConstraints maxHeight="25.0" minHeight="1.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="26.0" minHeight="0.0" prefHeight="22.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="28.0" minHeight="1.0" prefHeight="22.0" vgrow="SOMETIMES" />
                         <RowConstraints maxHeight="35.0" minHeight="10.0" prefHeight="26.0" vgrow="SOMETIMES" />
                      </rowConstraints>
                   </GridPane>

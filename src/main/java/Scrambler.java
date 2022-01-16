@@ -78,8 +78,8 @@ public class Scrambler {
         availableChars.add("U");
         availableChars.add("L");
         availableChars.add("D");
-        availableChars.add("B");
-        availableChars.add("F");
+       availableChars.add("B");
+      //  availableChars.add("F");
 
 
         additionalScramble.add("'");

@@ -137,8 +137,7 @@ public class MainMenuController implements Initializable {
 
 
     private void updateVirtualCube() {
-        cube = new Simulator();
-        cube.scramble(currentScramble);
+
         updateCubeFace(g, cube.getG());
         updateCubeFace(o, cube.getO());
         updateCubeFace(r, cube.getR());
@@ -189,6 +188,16 @@ public class MainMenuController implements Initializable {
         f4.setStyle(getColor(face[face.length-1]));
 
         f4.setPrefWidth(height);
+
+        f4.setOnAction(new EventHandler() {
+            @Override
+            public void handle(Event event) {
+                cube.move(face[face.length-1]);
+                updateVirtualCube();
+
+            }
+
+        });
         pane.add(f4, 1, 1);
         i++;
 
@@ -369,6 +378,8 @@ public class MainMenuController implements Initializable {
     private void updateScramble() {
         currentScramble = Scrambler.generateScramble();
         scrambleLabel.setText(currentScramble);
+        cube = new Simulator();
+        cube.scramble(currentScramble);
 
     }
 
