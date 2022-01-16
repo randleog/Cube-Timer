@@ -25,6 +25,20 @@ public class Avg {
         return time;
     }
 
+    public boolean isEqual (Avg comp) {
+        ArrayList<String> scrambles = new ArrayList<>();
+        for (Solve solve : solves) {
+            scrambles.add( solve.getScramble());
+        }
+        for (Solve solve : comp.solves) {
+            if (scrambles.contains(solve.getScramble())) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
     public double getAverage() {
 
 

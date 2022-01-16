@@ -144,7 +144,7 @@ public class SolveList {
 
     public static Solve getpbAo5() {
 
-     
+
         if (ao5pbs.size() < 1) {
             return new Solve( "no solves", 0, 0, "N/A");
         }
@@ -401,61 +401,7 @@ public class SolveList {
 
                 Solve score = new Solve(scramble, timeOfCompletion, time, penalty);
 
-                bufferAo5.solves.add(score);
-                if (average.contains(";5.")) {
-                    score.setFirstN(5, true);
-                    if (bufferAo5.solves.size() >= 5) {
 
-                        Avg tempAvg = new Avg();
-                        tempAvg.solves.addAll(bufferAo5.solves);
-                        tempAvg.setTime(score.getCalendar());
-                        ao5s.add(tempAvg);
-
-                    } else {
-                        System.out.println(score.toString()+ " no 5");
-
-                    }
-                    bufferAo5 = new Avg();
-
-                }
-
-
-                bufferAo12.solves.add(score);
-                if (average.contains(";12.")) {
-                    score.setFirstN(12, true);
-                    if (bufferAo12.solves.size() >= 12) {
-
-                        Avg tempAvg = new Avg();
-                        tempAvg.solves.addAll(bufferAo12.solves);
-                        tempAvg.setTime(score.getCalendar());
-                        ao12s.add(tempAvg);
-
-                    } else {
-                        System.out.println(score.toString()+ " no 12");
-
-                    }
-                    bufferAo12 = new Avg();
-
-                }
-
-
-                bufferAo50.solves.add(score);
-                if (average.contains(";50.")) {
-                    score.setFirstN(50, true);
-                    if (bufferAo50.solves.size() >= 50) {
-
-                        Avg tempAvg = new Avg();
-                        tempAvg.solves.addAll(bufferAo50.solves);
-                        tempAvg.setTime(score.getCalendar());
-                        ao50s.add(tempAvg);
-
-                    } else {
-                        System.out.println(score.toString() + " no 50");
-
-                    }
-                    bufferAo5 = new Avg();
-
-                }
 
 
 
@@ -496,224 +442,7 @@ public class SolveList {
         return bestStreakTime;
     }
 
-    /**
-     * gets the scores from the given table based on the parsed type.
-     *
-     * @param levelName String name of the level for the scores
-     * @return Arraylist of scores in the top 10 of the specified table
-     */
-    public static void loadSolvesOld(String levelName) {
-        total = 0;
 
-        double monthTotal = 0.01;
-
-        double weekTotal =0.01;
-        int currentWeek = 0;
-        int currentMonth = 0;
-
-        long daysWithout = 0;
-
-        int dailyMost = 0;
-        int hourlyMost = 0;
-
-        int streak = 0;
-
-        double totalDayTime = 0;
-
-        Calendar lastSolveC = Calendar.getInstance();
-
-        Avg bufferAo5 = new Avg();
-        Avg bufferAo12 = new Avg();
-        Avg bufferAo50 = new Avg();
-        ArrayList<Solve> solves = new ArrayList<>();
-
-        JSONParser jsonParser = new JSONParser();
-
-        try {
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(new FileReader("solves.json"));
-
-            JSONArray solvesJ = (JSONArray) (jsonObject.get("solves"));
-
-
-            for (int i = 0; i < solvesJ.size(); i++) {
-                JSONArray solve = (JSONArray) (solvesJ.get(i));
-
-                double time = (double) solve.get(1);
-
-
-                total = total + time;
-                String scramble = (String) solve.get(2);
-                String scrambleLength = scramble.replaceAll("2", "").replaceAll(" ", "").replaceAll("_", "").replaceAll("'", "");
-                if (scrambleLength.length() < shortestScramble) {
-
-                    shortestScramble = scrambleLength.length();
-                }
-
-                long timeOfCompletion = (long) solve.get(3);
-
-                String penalty = (String) solve.get(4);
-
-                String average = (String) solve.get(5);
-
-
-                Solve score = new Solve(scramble, timeOfCompletion, time, penalty);
-
-                if (solves.size() == 0) {
-                    firstSolve = score.getCalendar();
-                }
-
-
-                if ((score.getCalendar().get(Calendar.MONTH) == lastSolveC.get(Calendar.MONTH))
-                        && (score.getCalendar().get(Calendar.YEAR) ==lastSolveC.get(Calendar.YEAR))) {
-                    currentMonth++;
-                    monthTotal+=score.getTime();
-
-                } else {
-                    monthDensity.add(new Solve("average: " + String.format("%.3f"
-                            , monthTotal/currentMonth), score.getCalendar().getTimeInMillis(), currentMonth, "-"));
-                    currentMonth= 1;
-                    monthTotal = 0.01;
-                }
-
-                if ((score.getCalendar().get(Calendar.WEEK_OF_YEAR) == lastSolveC.get(Calendar.WEEK_OF_YEAR))
-                        && (score.getCalendar().get(Calendar.YEAR) ==lastSolveC.get(Calendar.YEAR))) {
-                    currentWeek++;
-                    weekTotal+=score.getTime();
-
-                } else {
-
-                    if (monthTotal/currentMonth > 1) {
-                        weeks.add(new Solve("weekly ", score.getCalendar().getTimeInMillis(), monthTotal / currentMonth, "-"));
-                    }
-                    currentMonth= 1;
-                    monthTotal = 0.01;
-                }
-
-
-                daysWithout = score.getCalendar().getTimeInMillis()-lastSolveC.getTimeInMillis();
-                if (daysWithout > longestTimeWithout) {
-                    longestTimeWithout = daysWithout;
-                    longestTime = lastSolveC;
-                }
-
-
-                if ((score.getCalendar().get(Calendar.DAY_OF_YEAR) == lastSolveC.get(Calendar.DAY_OF_YEAR))
-                        && (score.getCalendar().get(Calendar.YEAR) ==lastSolveC.get(Calendar.YEAR))) {
-
-                    if (dailyMost > mostInDay) {
-                        mostInDay = dailyMost;
-                        mostDay = score.getCalendar();
-                    }
-
-                    totalDayTime+=score.getTime();
-
-                    if (dailyMost == streakCount) {
-                        streak++;
-                        streakDays++;
-                        if (streak > bestStreak) {
-                            bestStreak = streak;
-                            bestStreakTime = score.getCalendar();
-                        }
-                    }
-                    dailyMost++;
-                } else {
-                    if (totalDayTime > 1) {
-                        if (dailyMost < streakCount) {
-                            System.out.println(totalDayTime);
-                            days.add(new Solve("day", score.getCalendar().getTimeInMillis(), totalDayTime / (dailyMost + 1), "-"));
-                            streak = 0;
-                        }
-                    }
-                    totalDayTime = 0.1;
-                    dailyMost = 1;
-
-                }
-
-                if ((score.getCalendar().get(Calendar.HOUR_OF_DAY) == lastSolveC.get(Calendar.HOUR_OF_DAY))
-                        && (score.getCalendar().get(Calendar.DAY_OF_YEAR) ==lastSolveC.get(Calendar.DAY_OF_YEAR))) {
-                    hourlyMost++;
-                    if (hourlyMost > mostInHour) {
-                        mostInHour = hourlyMost;
-                        mostHour = score.getCalendar();
-                    }
-                } else {
-                    hourlyMost = 0;
-                }
-
-                lastSolveC = score.getCalendar();
-
-                bufferAo5.solves.add(score);
-                if (bufferAo5.solves.size() > 4) {
-                    score.setFirstN(5, true);
-                    if (bufferAo5.solves.size() >= 5) {
-
-
-                        Avg tempAvg = new Avg();
-                        tempAvg.solves.addAll(bufferAo5.solves);
-                        tempAvg.setTime(score.getCalendar());
-                        ao5s.add(tempAvg);
-
-                    } else {
-                        System.out.println(score.toString()+ " no 5");
-
-                    }
-                    bufferAo5 = new Avg();
-
-                }
-
-
-                bufferAo12.solves.add(score);
-                if (bufferAo12.solves.size() > 11) {
-                    score.setFirstN(12, true);
-                    if (bufferAo12.solves.size() >= 12) {
-
-                        Avg tempAvg = new Avg();
-                        tempAvg.solves.addAll(bufferAo12.solves);
-                        tempAvg.setTime(score.getCalendar());
-                        ao12s.add(tempAvg);
-
-                    } else {
-                        System.out.println(score.toString()+ " no 12");
-
-                    }
-                    bufferAo12 = new Avg();
-
-                }
-
-
-                bufferAo50.solves.add(score);
-                if (bufferAo50.solves.size() > 49) {
-                    score.setFirstN(50, true);
-                    if (bufferAo50.solves.size() >= 50) {
-
-                        Avg tempAvg = new Avg();
-                        tempAvg.solves.addAll(bufferAo50.solves);
-                        tempAvg.setTime(score.getCalendar());
-                        ao50s.add(tempAvg);
-
-                    } else {
-                        System.out.println(score.toString() + " no 50");
-
-                    }
-                    bufferAo50 = new Avg();
-
-                }
-
-
-                solves.add(score);
-            }
-
-            currentStreak = streak;
-
-            SolveList.solvesJ = arrayToJson(sortTimes(solves));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     /**
      * gets the scores from the given table based on the parsed type.
@@ -739,11 +468,11 @@ public class SolveList {
 
         double totalDayTime = 0;
 
+
+
         Calendar lastSolveC = Calendar.getInstance();
 
-        Avg bufferAo5 = new Avg();
-        Avg bufferAo12 = new Avg();
-        Avg bufferAo50 = new Avg();
+
         ArrayList<Solve> solves = new ArrayList<>();
 
         JSONParser jsonParser = new JSONParser();
@@ -861,19 +590,43 @@ public class SolveList {
 
                 lastSolveC = score.getCalendar();
 
+
                 if (solves.size() > 4) {
                     Avg ao5 = getAverageConcurrent(5, solves);
                     ao5.setTime(score.getCalendar());
                     if (!(ao5.getTime() == null)) {
-                        ao5s.add(ao5);
+                        if (ao5s.size() > 0) {
+                            if (ao5.isEqual(ao5s.get(ao5s.size()-1))) {
+                                if (ao5s.get(ao5s.size() - 1).getAverage() > ao5.getAverage()) {
+                                    ao5s.remove(ao5s.size() - 1);
+                                    ao5s.add(ao5);
+                                }
+                            } else {
+                                ao5s.add(ao5);
+                            }
+                        } else {
+                            ao5s.add(ao5);
+                        }
                     }
                 }
+
 
                 if (solves.size() > 11) {
                     Avg ao12 = getAverageConcurrent(12, solves);
                     ao12.setTime(score.getCalendar());
                     if (!(ao12.getTime() == null)) {
-                        ao12s.add(ao12);
+                        if (ao12s.size() > 0) {
+                            if (ao12.isEqual(ao12s.get(ao12s.size()-1))) {
+                                if (ao12s.get(ao12s.size() - 1).getAverage() > ao12.getAverage()) {
+                                    ao12s.remove(ao12s.size() - 1);
+                                    ao12s.add(ao12);
+                                }
+                            } else {
+                                ao12s.add(ao12);
+                            }
+                        } else {
+                            ao12s.add(ao12);
+                        }
                     }
                 }
 
@@ -881,7 +634,18 @@ public class SolveList {
                     Avg ao50 = getAverageConcurrent(50, solves);
                     ao50.setTime(score.getCalendar());
                     if (!(ao50.getTime() == null)) {
-                        ao50s.add(ao50);
+                        if (ao50s.size() > 0) {
+                            if (ao50.isEqual(ao50s.get(ao50s.size()-1))) {
+                                if (ao50s.get(ao50s.size() - 1).getAverage() > ao50.getAverage()) {
+                                    ao50s.remove(ao50s.size() - 1);
+                                    ao50s.add(ao50);
+                                }
+                            } else {
+                                ao50s.add(ao50);
+                            }
+                        } else {
+                            ao50s.add(ao50);
+                        }
                     }
                 }
 
