@@ -15,6 +15,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -31,6 +32,12 @@ import java.util.*;
  */
 public class MainMenuController implements Initializable {
 
+    private static String green = "-fx-background-color:#00C603;";
+    private static String blue = "-fx-background-color:#0069E2;";
+    private static String red = "-fx-background-color:#F70800;";
+    private static String white = "-fx-background-color:#ffffff;";
+    private static String yellow = "-fx-background-color:#FFE900;";
+    private static String orange = "-fx-background-color:#FF9900;";
 
     private static String fontSize = "-fx-font-size: 13px";
 
@@ -63,6 +70,24 @@ public class MainMenuController implements Initializable {
     private static String allTimeDisplay= "pbs";
 
     private static double lastTime;
+
+    @FXML
+    private GridPane b;
+    @FXML
+    private GridPane y;
+
+    @FXML
+    private GridPane w;
+    @FXML
+    private GridPane r;
+
+    @FXML
+    private GridPane o;
+
+    @FXML
+    private GridPane g;
+
+
 
     @FXML
     private Button vButton;
@@ -108,6 +133,115 @@ public class MainMenuController implements Initializable {
     private static final double SECONDS_AMOUNT = 1000000000.0;
 
     private static final int dp = 3;
+    private Simulator cube = new Simulator();
+
+
+    private void updateVirtualCube() {
+        cube = new Simulator();
+        cube.scramble(currentScramble);
+        updateCubeFace(g, cube.getG());
+        updateCubeFace(o, cube.getO());
+        updateCubeFace(r, cube.getR());
+
+        updateCubeFace(w, cube.getW());
+        updateCubeFace(y, cube.getY());
+
+        updateCubeFace(b, cube.getB());
+    }
+
+    private void updateCubeFace(GridPane pane, String[] face) {
+        int height = 30;
+        int i = 0;
+
+        Button f0 = new Button();
+        f0.setStyle(getColor(face[i]));
+
+        f0.setPrefWidth(height);
+
+        f0.setMaxWidth(height);
+        pane.add(f0, 0, 0);
+        i++;
+
+
+        Button f1 = new Button();
+        f1.setStyle(getColor(face[i]));
+
+        f1.setPrefWidth(height);
+        pane.add(f1, 1, 0);
+        i++;
+
+
+        Button f2 = new Button();
+        f2.setStyle(getColor(face[i]));
+
+        f2.setPrefWidth(height);
+        pane.add(f2, 2, 0);
+        i++;
+        Button f3 = new Button();
+
+        f3.setPrefWidth(height);
+        f3.setStyle(getColor(face[i]));
+        pane.add(f3, 0, 1);
+
+
+
+        Button f4 = new Button();
+        f4.setStyle(getColor(face[face.length-1]));
+
+        f4.setPrefWidth(height);
+        pane.add(f4, 1, 1);
+        i++;
+
+
+        Button f5 = new Button();
+        f5.setStyle(getColor(face[i]));
+
+        f5.setPrefWidth(height);
+        pane.add(f5, 2, 1);
+        i++;
+
+
+        Button f6 = new Button();
+        f6.setStyle(getColor(face[i]));
+
+        f6.setPrefWidth(height);
+        pane.add(f6, 0, 2);
+        i++;
+
+
+        Button f7 = new Button();
+        f7.setStyle(getColor(face[i]));
+
+        f7.setPrefWidth(height);
+        pane.add(f7, 1, 2);
+        i++;
+
+
+        Button f8 = new Button();
+        f8.setStyle(getColor(face[i]));
+
+        f8.setPrefWidth(height);
+        pane.add(f8, 2, 2);
+
+    }
+
+    private String getColor(String color) {
+        if (color.contains("B")) {
+            return blue;
+        } else if (color.contains("O")) {
+            return orange;
+        }else if (color.contains("G")) {
+            return green;
+        }else if (color.contains("R")) {
+            return red;
+        }else if (color.contains("W")) {
+            return white;
+        }else if (color.contains("Y")) {
+            return yellow;
+        }
+
+        return white;
+    }
 
     private void updatestreakList(VBox times) {
 
@@ -241,7 +375,7 @@ public class MainMenuController implements Initializable {
     public void updateGui() {
 
         updateLeaderboards();
-
+        updateVirtualCube();
 
 
     }
