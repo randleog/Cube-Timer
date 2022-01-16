@@ -567,7 +567,7 @@ public class SolveList {
                 } else {
                     if (totalDayTime > 1) {
                         if (dailyMost < streakCount) {
-                            System.out.println(totalDayTime);
+                       //     System.out.println(totalDayTime);
                             days.add(new Solve("day", score.getCalendar().getTimeInMillis(), totalDayTime / (dailyMost + 1), "-"));
                             streak = 0;
                         }
@@ -971,7 +971,7 @@ public class SolveList {
         if (solves.size() < MainMenuController.VISIBILE_LIMIT*2 ) {
             monthly =  sortByTime(solves);
         } else {
-            System.out.println("sortN");
+           // System.out.println("sortN");
             monthly =  sortN(solves, MainMenuController.VISIBILE_LIMIT);
         }
 

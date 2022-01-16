@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Calendar;
 
 public class Simulator {
@@ -36,7 +37,8 @@ public class Simulator {
     }
 
     public void scramble(String scramble) {
-        System.out.println(scramble);
+        //System.out.println(isSolved());
+     //   System.out.println(scramble);
         scramble= scramble.replaceAll("R2", "RR");
         scramble= scramble.replaceAll("L2", "LL");
         scramble= scramble.replaceAll("U2", "UU");
@@ -54,12 +56,10 @@ public class Simulator {
         scramble=scramble.replaceAll(" ", "");
 
         for (int i = 0; i < scramble.length(); i++) {
-            System.out.println(getCube());
-            System.out.println(scramble.charAt(i));
+
             move(scramble.charAt(i));
         }
-        System.out.println(scramble);
-        System.out.println(getCube());
+   //     System.out.println(isSolved());
     }
 
     public String[] getG() {
@@ -489,6 +489,44 @@ public class Simulator {
             }
         }
         return cube;
+    }
+
+    public boolean isSolved() {
+
+
+        String[] g2 = {"0G","1G","2G","3G","4G","5G","6G","7G", "G"};
+        String[] b2 = {"0B","1B","2B","3B","4B","5B","6B","7B", "B"};
+        String[] r2 = {"0R","1R","2R","3R","4R","5R","6R","7R", "R"};
+        String[] o2 = {"0O","1O","2O","3O","4O","5O","6O","7O", "O"};
+        String[] y2 = {"0Y","1Y","2Y","3Y","4Y","5Y","6Y","7Y", "Y"};
+        String[] w2 = {"0W","1W","2W","3W","4W","5W","6W","7W", "W"};
+
+
+
+        if (!Arrays.equals(g, g2)) {
+            return false;
+        }
+
+
+        if (!Arrays.equals(b, b2)) {
+            return false;
+        }
+        if (!Arrays.equals(r, r2)) {
+            return false;
+        }
+        if (!Arrays.equals(o, o2)) {
+            return false;
+        }
+
+        if (!Arrays.equals(y, y2)) {
+            return false;
+        }
+
+        if (!Arrays.equals(w, w2)) {
+            return false;
+        }
+
+        return true;
     }
 
     public void move(char move) {

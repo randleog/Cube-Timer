@@ -1,11 +1,42 @@
 import java.util.ArrayList;
 
+
 public class Scrambler {
-    public static int scrambleLength = 25;
+    public static int scrambleLength = 30;
 
     private static ArrayList<String> availableChars = new ArrayList<>();
     private static ArrayList<String> additionalScramble = new ArrayList<>();
 
+
+    public static String findShorterSolutions(String scrambledCube) {
+        //Find shorter solutions (try more probes even a solution has already been found)
+        //In this example, we try AT LEAST 10000 phase2 probes to find shorter solutions.
+        String result = new Search().solution(scrambledCube, 21, 100000000, 10000, Search.INVERSE_SOLUTION);
+        return result;
+        // L2 U  D2 R' B  U2 L  F  U  R2 D2 F2 U' L2 U  B  D  R'
+    }
+
+    public static String continueSearch(String scrambledCube) {
+        //Continue to find shorter solutions
+        Search searchObj = new Search();
+        String result = searchObj.solution(scrambledCube, 21, 500, 0, 0);
+        if (!result.contains("Error")) {
+            return scrambledCube;
+        }
+
+        // R2 U2 B2 L2 F2 U' L2 R2 B2 R2 D  B2 F  L' F  U2 F' R' D' L2 R'
+
+        for (int i = 0; i < 10; i++) {
+            result = searchObj.next(500, 0, 0);
+            if (result.length()< scrambledCube.length()) {
+                if (!result.contains("Error")) {
+                    scrambledCube = result;
+                }
+            }
+
+        }
+        return scrambledCube;
+    }
 
     public static String generateScramble() {
         String scramble = "";
@@ -17,7 +48,16 @@ public class Scrambler {
         for (String letter : letters) {
             scramble = scramble + letter + additionalScramble.get(Main.random.nextInt(additionalScramble.size())) + " ";
         }
+        System.out.println(scramble);
 
+        String scrambledCube = Tools.fromScramble(scramble);
+
+        //scramble = findShorterSolutions(continueSearch(scrambledCube));
+        scramble = findShorterSolutions(scrambledCube);
+        scramble = scramble.replaceAll("  ", " ");
+        scramble =  scramble.replaceAll("  ", " ");
+
+        System.out.println(scramble);
         return scramble;
     }
 
