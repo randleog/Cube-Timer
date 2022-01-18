@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 
-
+/**
+ * @author William Randle (randleog)
+ */
 public class Scrambler {
     public static int scrambleLength = 30;
 
@@ -8,10 +10,14 @@ public class Scrambler {
     private static ArrayList<String> additionalScramble = new ArrayList<>();
 
 
+    private static ArrayList<String> scrambles = new ArrayList<>();
+    private static int currentScramble = -1;
+
+
     public static String findShorterSolutions(String scrambledCube) {
         //Find shorter solutions (try more probes even a solution has already been found)
         //In this example, we try AT LEAST 10000 phase2 probes to find shorter solutions.
-        String result = new Search().solution(scrambledCube, 21, 100000000, 10000, Search.INVERSE_SOLUTION);
+        String result = new Search().solution(scrambledCube, 30, 100000, 1000, Search.INVERSE_SOLUTION);
         return result;
         // L2 U  D2 R' B  U2 L  F  U  R2 D2 F2 U' L2 U  B  D  R'
     }
@@ -38,6 +44,18 @@ public class Scrambler {
         return scrambledCube;
     }
 
+    public static void loadScrambles() {
+
+        for (int i = 0; i < 1000; i++) {
+            scrambles.add(generateScramble());
+        }
+
+
+
+
+
+    }
+
     public static String generateScramble() {
         String scramble = "";
         ArrayList<String> letters = new ArrayList<>();
@@ -52,13 +70,24 @@ public class Scrambler {
 
         String scrambledCube = Tools.fromScramble(scramble);
 
-        //scramble = findShorterSolutions(continueSearch(scrambledCube));
-        scramble = findShorterSolutions(scrambledCube);
+        scramble = findShorterSolutions(continueSearch(scrambledCube));
+      //  scramble = findShorterSolutions(scrambledCube);
         scramble = scramble.replaceAll("  ", " ");
         scramble =  scramble.replaceAll("  ", " ");
 
         System.out.println(scramble);
         return scramble;
+    }
+
+    public static String getScramble() {
+
+        return generateScramble();
+   //  if (currentScramble > scrambles.size()-10) {
+   //      loadScrambles();
+  //   }
+
+     //   currentScramble++;
+     //   return scrambles.get(currentScramble);
     }
 
     private static boolean opposite(String moves1, String move2) {

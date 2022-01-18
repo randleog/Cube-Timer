@@ -1,19 +1,26 @@
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+
 import java.util.Arrays;
-import java.util.Calendar;
 
+/**
+ * a simulated rubiks cube
+ *
+ * @author William Randle (randleog)
+ */
 public class Simulator {
-    public String[] g = {"0G","1G","2G","3G","4G","5G","6G","7G", "G"};
+    public String[] g = {"0G", "1G", "2G", "3G", "4G", "5G", "6G", "7G", "G"};
 
 
-    String[] b = {"0B","1B","2B","3B","4B","5B","6B","7B", "B"};
+    String[] b = {"0B", "1B", "2B", "3B", "4B", "5B", "6B", "7B", "B"};
 
-    String[] r = {"0R","1R","2R","3R","4R","5R","6R","7R", "R"};
+    String[] r = {"0R", "1R", "2R", "3R", "4R", "5R", "6R", "7R", "R"};
 
-    String[] o = {"0O","1O","2O","3O","4O","5O","6O","7O", "O"};
+    String[] o = {"0O", "1O", "2O", "3O", "4O", "5O", "6O", "7O", "O"};
 
-    String[] y = {"0Y","1Y","2Y","3Y","4Y","5Y","6Y","7Y", "Y"};
+    String[] y = {"0Y", "1Y", "2Y", "3Y", "4Y", "5Y", "6Y", "7Y", "Y"};
 
-    String[] w = {"0W","1W","2W","3W","4W","5W","6W","7W", "W"};
+    String[] w = {"0W", "1W", "2W", "3W", "4W", "5W", "6W", "7W", "W"};
 
     String[][] gr = new String[4][3];
 
@@ -27,44 +34,82 @@ public class Simulator {
 
     String[][] br = new String[4][3];
 
+    private String[] faces = {"G", "R", "B", "O"};
+
+    private int up = 0;
+
+    int currentface = 0;
+
+    public void rotate(String dir) {
+        if (dir.equals("R")) {
+            if (up == 0) {
+                clockwise();
+            } else {
+                antiClockwise();
+            }
+        } else if (dir.equals("L")) {
+            if (up == 0) {
+                antiClockwise();
+            } else {
+                clockwise();
+            }
+        }
+
+    }
+
+    private void clockwise() {
+        currentface++;
+        if (currentface > 3) {
+            currentface=0;
+        }
+    }
+
+    private void antiClockwise() {
+        currentface--;
+        if (currentface < 0) {
+            currentface=3;
+        }
+    }
+
     public static void main(String[] args) {
-      //  System.out.println("rubiks simulator");
+        //  System.out.println("rubiks simulator");
 
         Simulator simulator = new Simulator();
         simulator.scramble("R U B R B"); // R' U2 L U B' L2 B2 L2 U2 R' U' R L2 B U' L B2 R B L D' R' B' ");
 
-      //  System.out.println(simulator.getCube());
+        //  System.out.println(simulator.getCube());
     }
 
     public void scramble(String scramble) {
         //System.out.println(isSolved());
-     //   System.out.println(scramble);
-        scramble= scramble.replaceAll("R2", "RR");
-        scramble= scramble.replaceAll("L2", "LL");
-        scramble= scramble.replaceAll("U2", "UU");
-        scramble= scramble.replaceAll("D2", "DD");
-        scramble= scramble.replaceAll("B2", "BB");
-        scramble= scramble.replaceAll("F2", "FF");
+        //   System.out.println(scramble);
+        scramble = scramble.replaceAll("R2", "RR");
+        scramble = scramble.replaceAll("L2", "LL");
+        scramble = scramble.replaceAll("U2", "UU");
+        scramble = scramble.replaceAll("D2", "DD");
+        scramble = scramble.replaceAll("B2", "BB");
+        scramble = scramble.replaceAll("F2", "FF");
 
-        scramble= scramble.replaceAll("R'", "RRR");
-        scramble= scramble.replaceAll("L'", "LLL");
-        scramble= scramble.replaceAll("U'", "UUU");
-        scramble= scramble.replaceAll("D'", "DDD");
-        scramble= scramble.replaceAll("B'", "BBB");
-        scramble= scramble.replaceAll("F'", "FFF");
+        scramble = scramble.replaceAll("R'", "RRR");
+        scramble = scramble.replaceAll("L'", "LLL");
+        scramble = scramble.replaceAll("U'", "UUU");
+        scramble = scramble.replaceAll("D'", "DDD");
+        scramble = scramble.replaceAll("B'", "BBB");
+        scramble = scramble.replaceAll("F'", "FFF");
 
-        scramble=scramble.replaceAll(" ", "");
+        scramble = scramble.replaceAll(" ", "");
 
         for (int i = 0; i < scramble.length(); i++) {
 
             move(scramble.charAt(i));
         }
-   //     System.out.println(isSolved());
+        //     System.out.println(isSolved());
     }
 
     public String[] getG() {
         return g;
     }
+
     public String[] getB() {
         return b;
     }
@@ -115,7 +160,6 @@ public class Simulator {
         o1[2] = o[2];
 
         gr[3] = o1;
-
 
 
     }
@@ -172,7 +216,6 @@ public class Simulator {
         rr[3] = g1;
 
 
-
     }
 
     private void setRR() {
@@ -225,7 +268,6 @@ public class Simulator {
         b1[2] = b[2];
 
         or[3] = b1;
-
 
 
     }
@@ -282,7 +324,6 @@ public class Simulator {
         wr[3] = o1;
 
 
-
     }
 
     private void setWR() {
@@ -300,7 +341,7 @@ public class Simulator {
         g[0] = wr[2][2];
 
         o[2] = wr[3][0];
-        o[1] =  wr[3][1];
+        o[1] = wr[3][1];
         o[0] = wr[3][2];
 
 
@@ -329,7 +370,6 @@ public class Simulator {
         yr[2] = g1;
 
 
-
         String[] r1 = new String[4];
         r1[0] = r[5];
         r1[1] = r[6];
@@ -347,7 +387,7 @@ public class Simulator {
         b[7] = yr[0][2];
 
         o[5] = yr[1][0];
-        o[6] =  yr[1][1];
+        o[6] = yr[1][1];
         o[7] = yr[1][2];
 
         g[5] = yr[2][0];
@@ -358,7 +398,6 @@ public class Simulator {
         r[5] = yr[3][0];
         r[6] = yr[3][1];
         r[7] = yr[3][2];
-
 
 
     }
@@ -386,7 +425,6 @@ public class Simulator {
         br[2] = y1;
 
 
-
         String[] r1 = new String[4];
         r1[0] = r[2];
         r1[1] = r[4];
@@ -404,7 +442,7 @@ public class Simulator {
         w[2] = br[0][2];
 
         o[0] = br[1][0];
-        o[3] =  br[1][1];
+        o[3] = br[1][1];
         o[5] = br[1][2];
 
         y[5] = br[2][0];
@@ -415,7 +453,6 @@ public class Simulator {
         r[7] = br[3][0];
         r[4] = br[3][1];
         r[2] = br[3][2];
-
 
 
     }
@@ -434,7 +471,6 @@ public class Simulator {
                 cube = cube + "W " + "| ";
                 i++;
             }
-
 
 
         }
@@ -473,9 +509,6 @@ public class Simulator {
         cube = cube + "\n";
 
 
-
-
-
         cube = cube + "\n               ";
         i = 0;
         for (String string : y) {
@@ -494,13 +527,12 @@ public class Simulator {
     public boolean isSolved() {
 
 
-        String[] g2 = {"0G","1G","2G","3G","4G","5G","6G","7G", "G"};
-        String[] b2 = {"0B","1B","2B","3B","4B","5B","6B","7B", "B"};
-        String[] r2 = {"0R","1R","2R","3R","4R","5R","6R","7R", "R"};
-        String[] o2 = {"0O","1O","2O","3O","4O","5O","6O","7O", "O"};
-        String[] y2 = {"0Y","1Y","2Y","3Y","4Y","5Y","6Y","7Y", "Y"};
-        String[] w2 = {"0W","1W","2W","3W","4W","5W","6W","7W", "W"};
-
+        String[] g2 = {"0G", "1G", "2G", "3G", "4G", "5G", "6G", "7G", "G"};
+        String[] b2 = {"0B", "1B", "2B", "3B", "4B", "5B", "6B", "7B", "B"};
+        String[] r2 = {"0R", "1R", "2R", "3R", "4R", "5R", "6R", "7R", "R"};
+        String[] o2 = {"0O", "1O", "2O", "3O", "4O", "5O", "6O", "7O", "O"};
+        String[] y2 = {"0Y", "1Y", "2Y", "3Y", "4Y", "5Y", "6Y", "7Y", "Y"};
+        String[] w2 = {"0W", "1W", "2W", "3W", "4W", "5W", "6W", "7W", "W"};
 
 
         if (!Arrays.equals(g, g2)) {
@@ -620,10 +652,10 @@ public class Simulator {
 
     private void moveJust(String[][] g) {
         String[] buffer = g[3];
-       g[3] = g[2];
-        g[2]=g[1];
-        g[1]=g[0];
-        g[0]=buffer;
+        g[3] = g[2];
+        g[2] = g[1];
+        g[1] = g[0];
+        g[0] = buffer;
 
 
     }
@@ -651,6 +683,513 @@ public class Simulator {
 
     }
 
+    Color red = Color.rgb(255, 0, 0);
+    Color green = Color.rgb(0, 255, 0);
+    Color blue = Color.rgb(0, 50, 255);
+    Color orange = Color.rgb(255, 125, 0);
+    Color white = Color.rgb(255, 255, 255);
+    Color yellow = Color.rgb(255, 210, 0);
+
+    public Color getColor(String color) {
+        if (color.contains("B")) {
+            return blue;
+        } else if (color.contains("O")) {
+            return orange;
+        } else if (color.contains("G")) {
+            return green;
+        } else if (color.contains("R")) {
+            return red;
+        } else if (color.contains("W")) {
+            return white;
+        } else if (color.contains("Y")) {
+            return yellow;
+        }
+
+        return white;
+
+    }
+
+    public int getHeight(int pos) {
+        return 1;
+    }
+    double angle = 2;
+
+    double angleC = 1;
+
+
+    double sideAngle = 1;
+
+    int width = 20;
+    int height = 20;
+
+    private void drawSides(GraphicsContext g2d, String[] g, String[] w, String[] r, String[] alt, double startX, double startY) {
+      //  sideAngle = Math.pow(sideAngle, 1.5);
+
+
+        if ( sideAngle < 0) {
+           // moveJust(alt);
+            drawH2(g2d, startX-width*3, startY, alt);
+        } else {
+            drawH1(g2d, startX, startY, r);
+        }
+
+        int i = 0;
+        g2d.setFill(getColor(g[i]));
+        g2d.fillRect(startX, startY, width, height);
+
+        i++;
+
+
+        g2d.setFill(getColor(g[i]));
+        g2d.fillRect(startX + width, startY, width, height);
+        i++;
+
+
+        g2d.setFill(getColor(g[i]));
+        g2d.fillRect(startX + width * 2, startY, width, height);
+        i++;
+
+        g2d.setFill(getColor(g[i]));
+        g2d.fillRect(startX, startY + height, width, height);
+        i++;
+
+        g2d.setFill(getColor(g[g.length - 1]));
+        g2d.fillRect(startX + width, startY + height, width, height);
+
+
+        g2d.setFill(getColor(g[i]));
+        g2d.fillRect(startX + width * 2, startY + height, width, height);
+        i++;
+
+
+        g2d.setFill(getColor(g[i]));
+        g2d.fillRect(startX, startY + height * 2, width, height);
+        i++;
+
+
+        g2d.setFill(getColor(g[i]));
+        g2d.fillRect(startX + width, startY + height * 2, width, height);
+        i++;
+
+
+        g2d.setFill(getColor(g[i]));
+        g2d.fillRect(startX + width * 2, startY + height * 2, width, height);
+        i++;
+
+
+        i = 0;
+
+
+        /////now handling the top
+
+        double[] widths = {startX + (width / (angle * sideAngle)), startX + width + (width / (angle * sideAngle)), startX + width, startX};
+        double[] widths2 = {startX + (width / (angle * sideAngle)) + width, startX + width + (width / (angle * sideAngle)) + width, startX + width * 2, startX + width};
+        double[] widths3 = {startX + (width / (angle * sideAngle)) + width * 2, startX + width + (width / (angle * sideAngle)) + width * 2, startX + width * 3, startX + width * 2};
+
+
+        double widthV = (width / (angle * sideAngle));
+        double v4 = startX + width + widthV * 2;
+
+
+        double widthV2 = startX + widthV * 2;
+        double widthV3 = startX + widthV * 3;
+
+        double[] widths21 = {widthV2, v4, startX + width + widthV, startX + widthV};
+        double[] widths22 = {widthV2 + width, startX + width + widthV + width + widthV, startX + width * 2 + widthV, startX + width + widthV};
+        double[] widths23 = {widthV2 + width * 2, widthV2 + width * 3, startX + width * 3 + widthV, startX + width * 2 + widthV};
+
+        double[] widths31 = {widthV3, startX + width + widthV * 4, startX + width + widthV * 3, startX + widthV * 2};
+        double[] widths32 = {widthV3 + width , startX + width*2 + widthV *3, startX + width * 2 + widthV*2, v4};
+        double[] widths33 = {widthV3+ width * 2, startX + width * 3 + widthV*3, startX + width * 3 + widthV*2, startX + width * 2 + widthV*2};
+
+
+        double v1 = startY - height / (angle * angleC) * 3;
+        double v2 = startY - height / (angle * angleC) * 2;
+        double v3 = startY - height / (angle * angleC) * 1;
+
+        double[] heights = {v1, v1, v2, v2};
+        double[] heights2 = {v2, v2, v3, v3};
+        double[] heights3 = {v3, v3, startY, startY};
+
+
+
+        g2d.setFill(getColor(w[i]));
+        g2d.fillPolygon(widths31, heights, 4);
+        i++;
+
+        g2d.setFill(getColor(w[i]));
+        g2d.fillPolygon(widths32, heights, 4);
+        i++;
+
+        g2d.setFill(getColor(w[i]));
+        g2d.fillPolygon(widths33, heights, 4);
+        i++;
+
+        g2d.setFill(getColor(w[i]));
+        g2d.fillPolygon(widths21, heights2, 4);
+        i++;
+
+        g2d.setFill(getColor(w[w.length - 1]));
+        g2d.fillPolygon(widths22, heights2, 4);
+
+
+        //this
+        g2d.setFill(getColor(w[i]));
+        g2d.fillPolygon(widths23, heights2, 4);
+        i++;
+
+        g2d.setFill(getColor(w[i]));
+        g2d.fillPolygon(widths, heights3, 4);
+        i++;
+
+        g2d.setFill(getColor(w[i]));
+        g2d.fillPolygon(widths2, heights3, 4);
+        i++;
+
+        g2d.setFill(getColor(w[i]));
+        g2d.fillPolygon(widths3, heights3, 4);
+        i++;
+
+
+
+
+
+    }
+
+
+    private void drawH1(GraphicsContext g2d, double startX, double startY, String[] alt) {
+
+        int i = 0;
+        double widthV = (width / (angle * sideAngle));
+        double v4 = startX + width + widthV * 2;
+
+
+        double widthV2 = startX + widthV * 2;
+        double widthV3 = startX + widthV * 3;
+
+        /////now handling the top
+
+
+
+        double[] widths = {startX+width*3, startX + width * 3 + widthV, startX + width * 3 + widthV, startX+width*3};
+
+        double[] widths2 = {startX+width*3 + widthV, startX + width * 3 + widthV*2, startX + width * 3 + widthV*2, startX+width*3+ widthV};
+
+        double[] widths3 = {startX+width*3 + widthV*2, startX + width * 3 + widthV*3, startX + width * 3 + widthV*3, startX+width*3+ widthV*2};
+
+        double v1 = startY-height / (angle * angleC);
+        double v2 = startY+height-height / (angle * angleC);
+
+
+        double heightV = height / (angle * angleC);
+
+        double[] heights = {startY, v1  , v2, startY+height};
+        double[] heights11 = {startY- heightV, v1- heightV, v2- heightV, startY+height- heightV};
+        double[] heights12 = {startY- heightV*2, v1- heightV*2, v2- heightV*2, startY+height- heightV*2};
+
+
+        double[] heights20 = {startY+height, v1+height  , v2+height, startY+height+height};
+        double[] heights21 = {startY- heightV+height, v1- heightV+height, v2- heightV+height, startY+height- heightV+height};
+        double[] heights22 = {startY- heightV*2+height, v1- heightV*2+height, v2- heightV*2+height, startY+height- heightV*2+height};
+
+        double[] heights30 = {startY+height+height, v1+height+height  , v2+height+height, startY+height+height+height};
+        double[] heights31 = {startY- heightV+height+height, v1- heightV+height+height, v2- heightV+height+height, startY+height- heightV+height+height};
+        double[] heights32 = {startY- heightV*2+height+height, v1- heightV*2+height+height, v2- heightV*2+height+height, startY+height- heightV*2+height+height};
+
+        g2d.setFill(getColor(alt[i]));
+        g2d.fillPolygon(widths, heights, 4);
+        i++;
+
+
+        g2d.setFill(getColor(alt[i]));
+        g2d.fillPolygon(widths2, heights11, 4);
+        i++;
+
+
+        g2d.setFill(getColor(alt[i]));
+        g2d.fillPolygon(widths3, heights12, 4);
+        i++;
+
+        g2d.setFill(getColor(alt[i]));
+        g2d.fillPolygon(widths, heights20, 4);
+        i++;
+
+
+        g2d.setFill(getColor(alt[alt.length-1]));
+        g2d.fillPolygon(widths2, heights21, 4);
+
+
+
+        g2d.setFill(getColor(alt[i]));
+        g2d.fillPolygon(widths3, heights22, 4);
+        i++;
+
+        g2d.setFill(getColor(alt[i]));
+        g2d.fillPolygon(widths, heights30, 4);
+        i++;
+
+
+        g2d.setFill(getColor(alt[i]));
+        g2d.fillPolygon(widths2, heights31, 4);
+        i++;
+
+
+        g2d.setFill(getColor(alt[i]));
+        g2d.fillPolygon(widths3, heights32, 4);
+        i++;
+    }
+
+    private void drawH2(GraphicsContext g2d, double startX, double startY, String[] alt) {
+
+        int i = 0;
+        double widthV = (width / (angle * sideAngle));
+        double v4 = startX + width + widthV * 2;
+
+
+        double widthV2 = startX + widthV * 2;
+        double widthV3 = startX + widthV * 3;
+
+        /////now handling the top
+
+
+
+        double[] widths = {startX+width*3, startX + width * 3 + widthV, startX + width * 3 + widthV, startX+width*3};
+
+        double[] widths2 = {startX+width*3 + widthV, startX + width * 3 + widthV*2, startX + width * 3 + widthV*2, startX+width*3+ widthV};
+
+        double[] widths3 = {startX+width*3 + widthV*2, startX + width * 3 + widthV*3, startX + width * 3 + widthV*3, startX+width*3+ widthV*2};
+
+        double v1 = startY-height / (angle * angleC);
+        double v2 = startY+height-height / (angle * angleC);
+
+
+        double heightV = height / (angle * angleC);
+
+        double[] heights = {startY, v1  , v2, startY+height};
+        double[] heights11 = {startY- heightV, v1- heightV, v2- heightV, startY+height- heightV};
+        double[] heights12 = {startY- heightV*2, v1- heightV*2, v2- heightV*2, startY+height- heightV*2};
+
+
+        double[] heights20 = {startY+height, v1+height  , v2+height, startY+height+height};
+        double[] heights21 = {startY- heightV+height, v1- heightV+height, v2- heightV+height, startY+height- heightV+height};
+        double[] heights22 = {startY- heightV*2+height, v1- heightV*2+height, v2- heightV*2+height, startY+height- heightV*2+height};
+
+        double[] heights30 = {startY+height+height, v1+height+height  , v2+height+height, startY+height+height+height};
+        double[] heights31 = {startY- heightV+height+height, v1- heightV+height+height, v2- heightV+height+height, startY+height- heightV+height+height};
+        double[] heights32 = {startY- heightV*2+height+height, v1- heightV*2+height+height, v2- heightV*2+height+height, startY+height- heightV*2+height+height};
+
+        g2d.setFill(getColor(alt[2]));
+        g2d.fillPolygon(widths, heights, 4);
+        i++;
+
+
+        g2d.setFill(getColor(alt[1]));
+        g2d.fillPolygon(widths2, heights11, 4);
+        i++;
+
+
+        g2d.setFill(getColor(alt[0]));
+        g2d.fillPolygon(widths3, heights12, 4);
+        i++;
+
+        g2d.setFill(getColor(alt[4]));
+        g2d.fillPolygon(widths, heights20, 4);
+        i++;
+
+
+        g2d.setFill(getColor(alt[alt.length-1]));
+        g2d.fillPolygon(widths2, heights21, 4);
+
+
+
+        g2d.setFill(getColor(alt[3]));
+        g2d.fillPolygon(widths3, heights22, 4);
+        i++;
+
+        g2d.setFill(getColor(alt[7]));
+        g2d.fillPolygon(widths, heights30, 4);
+        i++;
+
+
+        g2d.setFill(getColor(alt[6]));
+        g2d.fillPolygon(widths2, heights31, 4);
+        i++;
+
+
+        g2d.setFill(getColor(alt[5]));
+        g2d.fillPolygon(widths3, heights32, 4);
+        i++;
+    }
+
+    private void drawCube(GraphicsContext g2d, String col) {
+        g2d.setFill(Color.rgb(35,35,35));
+        g2d.fillRect(0,0,g2d.getCanvas().getWidth(),g2d.getCanvas().getHeight());
+
+        double startY = g2d.getCanvas().getWidth() / 3.0;
+
+        double startX = 30;
+
+        if (col.contains("GW")) {
+            drawSides(g2d, g, w, r, o,startX, startY);
+        } else if (col.contains("RW")) {
+            moveJust(w);
+            drawSides(g2d, r, w, b,g, startX, startY);
+            moveJust(w);
+            moveJust(w);
+            moveJust(w);
+        }else if (col.contains("BW")) {
+            moveJust(w);
+            moveJust(w);
+            drawSides(g2d, b, w, o,r, startX, startY);
+            moveJust(w);
+            moveJust(w);
+        }else if (col.contains("OW")) {
+            moveJust(w);
+            moveJust(w);
+            moveJust(w);
+            drawSides(g2d, o, w, g,b, startX, startY);
+            moveJust(w);
+        }
+
+        if (col.contains("GY")) {
+            moveJust(g);
+            moveJust(g);
+            moveJust(o);
+            moveJust(o);
+            moveJust(y);
+            moveJust(y);
+            drawSides(g2d, g, y, o,r, startX, startY);
+            moveJust(y);
+            moveJust(y);
+            moveJust(g);
+            moveJust(g);
+            moveJust(o);
+            moveJust(o);
+        } else if (col.contains("RY")) {
+            moveJust(g);
+            moveJust(g);
+            moveJust(r);
+            moveJust(r);
+            moveJust(y);
+            drawSides(g2d, r, y, g, b,startX, startY);
+            moveJust(y);
+            moveJust(y);
+            moveJust(y);
+            moveJust(g);
+            moveJust(g);
+            moveJust(r);
+            moveJust(r);
+        }else if (col.contains("BY")) {
+            moveJust(b);
+            moveJust(b);
+            moveJust(r);
+            moveJust(r);
+            drawSides(g2d, b, y, r,o, startX, startY);
+            moveJust(b);
+            moveJust(b);
+            moveJust(r);
+            moveJust(r);
+        }else if (col.contains("OY")) {
+            moveJust(o);
+            moveJust(o);
+            moveJust(b);
+            moveJust(b);
+            moveJust(y);
+            moveJust(y);
+            moveJust(y);
+            drawSides(g2d, o, y, b, g,startX, startY);
+            moveJust(y);
+            moveJust(o);
+            moveJust(o);
+            moveJust(b);
+            moveJust(b);
+        }
+    }
+
+
+    public void draw3d(GraphicsContext g2d, String col) {
+        double startY = g2d.getCanvas().getWidth() / 3.0;
+
+
+        if (col.contains("GW")) {
+            if (up == 0) {
+                drawCube(g2d, faces[currentface]+"W");
+            }
+
+        } else if (col.contains("RW")) {
+            moveJust(w);
+            drawSides(g2d, r, w, b,g, 0, startY);
+            moveJust(w);
+            moveJust(w);
+            moveJust(w);
+        }else if (col.contains("BW")) {
+            moveJust(w);
+            moveJust(w);
+            drawSides(g2d, b, w, o, r,0, startY);
+            moveJust(w);
+            moveJust(w);
+        }else if (col.contains("OW")) {
+            moveJust(w);
+            moveJust(w);
+            moveJust(w);
+            drawSides(g2d, o, w, g,b, 0, startY);
+            moveJust(w);
+        }
+
+        if (col.contains("GY")) {
+            moveJust(g);
+            moveJust(g);
+            moveJust(o);
+            moveJust(o);
+            moveJust(y);
+            moveJust(y);
+            drawSides(g2d, g, y, o,r, 20, startY);
+            moveJust(y);
+            moveJust(y);
+            moveJust(g);
+            moveJust(g);
+            moveJust(o);
+            moveJust(o);
+        } else if (col.contains("RY")) {
+            moveJust(g);
+            moveJust(g);
+            moveJust(r);
+            moveJust(r);
+            moveJust(y);
+            drawSides(g2d, r, y, g,b, 0, startY);
+            moveJust(y);
+            moveJust(y);
+            moveJust(y);
+            moveJust(g);
+            moveJust(g);
+            moveJust(r);
+            moveJust(r);
+        }else if (col.contains("BY")) {
+            moveJust(b);
+            moveJust(b);
+            moveJust(r);
+            moveJust(r);
+            drawSides(g2d, b, y, r, o,0, startY);
+            moveJust(b);
+            moveJust(b);
+            moveJust(r);
+            moveJust(r);
+        }else if (col.contains("OY")) {
+            moveJust(o);
+            moveJust(o);
+            moveJust(b);
+            moveJust(b);
+            moveJust(y);
+            moveJust(y);
+            moveJust(y);
+            drawSides(g2d, o, y, b, g,0, startY);
+            moveJust(y);
+            moveJust(o);
+            moveJust(o);
+            moveJust(b);
+            moveJust(b);
+        }
+    }
 
 
 }

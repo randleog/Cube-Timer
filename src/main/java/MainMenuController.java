@@ -7,12 +7,12 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
@@ -21,13 +21,14 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 
 /**
- * This class handles interactions with the end game screen.
+ * This class handles interactions with the screen
  * @author William Randle
  */
 public class MainMenuController implements Initializable {
@@ -43,10 +44,15 @@ public class MainMenuController implements Initializable {
 
     private static String delimeter = "----------------------------------------------------";
 
+    Timeline cubeTurnR = new Timeline();
+    Timeline cubeTurnL = new Timeline();
+
     private boolean updatedMonthly = false;
     private boolean updatedDaily = false;
     private boolean updatedWeekly = false;
     private boolean updatedAll = false;
+
+    double rotateH =1;
 
     public static double timeAddon = 0;//(1.0/Menu.FPS);
 
@@ -70,6 +76,36 @@ public class MainMenuController implements Initializable {
     private static String allTimeDisplay= "pbs";
 
     private static double lastTime;
+
+    /**
+     * make the timer be in two stages starting from 10 down to 1. it isnt linear.
+     */
+
+    @FXML
+    private Canvas cube3dGW;
+
+    @FXML
+    private Canvas cube3dBW;
+
+
+    @FXML
+    private Canvas cube3dRW;
+
+    @FXML
+    private Canvas cube3dOW;
+
+    @FXML
+    private Canvas cube3dGY;
+
+    @FXML
+    private Canvas cube3dBY;
+
+
+    @FXML
+    private Canvas cube3dRY;
+
+    @FXML
+    private Canvas cube3dOY;
 
     @FXML
     private GridPane b;
@@ -146,6 +182,76 @@ public class MainMenuController implements Initializable {
         updateCubeFace(y, cube.getY());
 
         updateCubeFace(b, cube.getB());
+
+        cube.draw3d(cube3dGW.getGraphicsContext2D(), "GW");
+
+    }
+
+    public void rotateR(Event event) {
+        cube.rotate("R");
+        rotateH = -1;
+        cubeTurnR.play();
+
+
+
+    }
+    public void rotateL(Event event) {
+        cube.rotate("L");
+        cubeTurnL.play();
+
+    }
+    public void GW(Event event) {
+        cube.move("G");
+        updateVirtualCube();
+
+    }
+
+    public void RW(Event event) {
+        cube.move("R");
+        updateVirtualCube();
+
+    }
+
+    public void BW(Event event) {
+        cube.move("B");
+        updateVirtualCube();
+
+    }
+
+    public void OW(Event event) {
+        cube.move("O");
+        updateVirtualCube();
+
+    }
+
+    public void GY(Event event) {
+        cube.move("G");
+
+        updateVirtualCube();
+
+    }
+
+    public void RY(Event event) {
+        cube.move("R");
+
+
+
+        updateVirtualCube();
+
+    }
+
+    public void BY(Event event) {
+        cube.move("B");
+
+        updateVirtualCube();
+
+    }
+
+    public void OY(Event event) {
+        cube.move("O");
+
+        updateVirtualCube();
+
     }
 
     private void updateCubeFace(GridPane pane, String[] face) {
@@ -376,7 +482,7 @@ public class MainMenuController implements Initializable {
     }
 
     private void updateScramble() {
-        currentScramble = Scrambler.generateScramble();
+        currentScramble = Scrambler.getScramble();
         scrambleLabel.setText(currentScramble);
         cube = new Simulator();
         cube.scramble(currentScramble);
@@ -1044,10 +1150,67 @@ public class MainMenuController implements Initializable {
 
 
 
+    public static Image face = getImage("face1.png", 64);
+
+    /**
+     * Create an input stream to read images.
+     * @param fileName File name.
+     * @param size Size of image.
+     * @return The image.
+     */
+    public static Image getImage(String fileName, int size) {
+        Image image;
+        FileInputStream inputstream = null;
+        try {
+            inputstream = new FileInputStream("src\\main\\resources\\" + fileName);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        image = new Image(inputstream, size, size, true, false);
+        return image;
+    }
 
 
+    double turnAmount = 40;
 
+    private void cubeRotateL() {
 
+        if (rotateH > 0) {
+            rotateH+= turnAmount / Menu.FPS;
+            if (rotateH > 10) {
+                rotateH = -10;
+            }
+            cube.sideAngle = rotateH;
+            cube.draw3d(cube3dGW.getGraphicsContext2D(), "GW");
+        } else {
+            rotateH+= turnAmount / Menu.FPS;
+            cube.sideAngle = rotateH;
+            cube.draw3d(cube3dGW.getGraphicsContext2D(), "GW");
+            if (rotateH > -1) {
+                rotateH = 1;
+                cubeTurnL.stop();
+
+                updateVirtualCube();
+                System.out.println("***___");
+            }
+        }
+
+    }
+
+    private void cubeRotateR() {
+
+        rotateH+= 5.0 / Menu.FPS;
+        if (rotateH >1) {
+            rotateH = 1;
+            cubeTurnR.stop();
+            updateVirtualCube();
+           // System.out.println("***___");
+
+        }
+     //   System.out.println(rotateH);
+        cube.sideAngle = rotateH;
+        cube.draw3d(cube3dGW.getGraphicsContext2D(), "GW");
+    }
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         panels.add(allTime);
@@ -1072,8 +1235,22 @@ public class MainMenuController implements Initializable {
          lButton.setFocusTraversable(false);
          vButton.setFocusTraversable(false);
 
+       cubeTurnL = new Timeline(new KeyFrame(Duration.millis(fpsTime), (ActionEvent event) -> {
+            cubeRotateL();
 
+        }));
+       cubeTurnL.setCycleCount(Timeline.INDEFINITE);
+        cubeTurnR = new Timeline(new KeyFrame(Duration.millis(fpsTime), (ActionEvent event) -> {
+            cubeRotateR();
 
+        }));
+        cubeTurnR.setCycleCount(Timeline.INDEFINITE);
+
+      //  PhongMaterial material = new PhongMaterial(Color.TRANSPARENT, face, null, null, null);
+      //  material.setDiffuseColor(Color.WHITE);
+      // material.set
+
+      //  cube3d.setMaterial(material);
 
     }
 }
